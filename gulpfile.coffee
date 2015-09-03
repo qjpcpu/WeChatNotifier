@@ -1,6 +1,6 @@
 gulp = require 'gulp'
 coffee = require 'gulp-coffee'
-server = require 'gulp-express'
+gls = require('gulp-live-server')
 rename = require("gulp-rename")
 runSequence = require('run-sequence')
 del = require 'del'
@@ -31,8 +31,9 @@ gulp.task 'build', ->
    runSequence 'clean',['config','coffee']
 
 gulp.task 'serve', ->
-  server.run ['bin/www']
   gulp.watch ['src/config/*.cson'], ['config']
   gulp.watch ['src/**/*.coffee'], ['coffee']
-  gulp.watch ['./**/*.js'], ->
-    server.run ['node bin/www']
+  server = gls.new 'bin/www',{env: {DEBUG: '*'}}
+  server.start()
+  gulp.watch ['./**/*.js'], (file) ->
+    server.notify.apply server, [file]
