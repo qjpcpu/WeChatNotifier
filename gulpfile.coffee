@@ -33,7 +33,7 @@ gulp.task 'build', ->
 gulp.task 'serve', ->
   gulp.watch ['src/config/*.cson'], ['config']
   gulp.watch ['src/**/*.coffee'], ['coffee']
-  server = gls.new 'bin/www',{env: {DEBUG: '*'}}
+  server = gls.new 'bin/www'
   server.start()
   gulp.watch ['./**/*.js'], (file) ->
     server.notify.apply server, [file]

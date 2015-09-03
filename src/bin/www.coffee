@@ -6,7 +6,7 @@ requirejs.config
 
 requirejs ['debug','http','../app'], (debug,http,app) ->
   debug = debug('wechatnotifier:server')
-  
+
   normalizePort = (val) ->
     port = parseInt(val, 10)
     return val if isNaN(port)
