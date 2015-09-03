@@ -63,7 +63,7 @@ define [
         )
         ((err) ->
             log "get #{handler.userList.length} wechat subscribers."
-            cb null,handler.userList
+            if err == 'done' then cb(null,handler.userList) else cb(err,[])
         )
     )
 
