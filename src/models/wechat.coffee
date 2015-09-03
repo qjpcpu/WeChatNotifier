@@ -36,26 +36,34 @@ define [
         result.expires_in -= 60
         expiredAt = moment().add(result.expires_in, 'seconds')
         log "fetch access token success, it would expire at #{expiredAt.format('HH:mm')}"
-        cb undefined,result.access_token,result.expires_in
+        cb null,result.access_token,result.expires_in
 
   # get user list
   users: (accessToken,cb) ->
-    nextOpenid = undefined
-    userList = []
-    async.whilst(
-        (-> nextOpenid == '')
-        ((callback) ->
+    handler = 
+      userList: []
+      nextOpenid: null
+
+    async.forever(
+        ((next) ->
           rest.get('https://api.weixin.qq.com/cgi-bin/user/get',
             query:
               access_token: accessToken  
-              next_openid:  nextOpenid
+              next_openid:  handler.nextOpenid
           ).on 'complete', (result) ->
-             userList.push result.data.openid... if result.data.openid.length
-             nextOpenid = result.next_openid           
+            if result.errmsg?
+               next result.errmsg
+            else
+              handler.userList.push result.data.openid... if result.data.openid?.length
+              if result.openid?.length
+                handler.nextOpenid = result.openid 
+                next()
+              else 
+                next('done')
         )
         ((err) ->
-            log "get #{userList.length} wechat subscribers."
-            cb undefined,userList
+            log "get #{handler.userList.length} wechat subscribers."
+            cb null,handler.userList
         )
     )
 
