@@ -13,6 +13,17 @@ describe 'WeChat', ->
       WeChat.fetchAccessToken (err,token,expiresIn) ->
         expect(err).to.be(null)
         expect(token.length).to.be.greaterThan 1
-        WeChat.users token, (error,list) ->
+        done()
+
+  context 'have valid access token', ->
+    accessToken = null
+    before (done) ->
+      WeChat.fetchAccessToken (err,token,expiresIn) ->
+        accessToken = token
+        done()
+
+    describe '#users', ->
+      it 'should get users list', (done) ->
+        WeChat.users accessToken, (error,list) ->
           expect(list).to.be.an Array
           done()
