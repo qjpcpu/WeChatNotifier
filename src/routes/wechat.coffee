@@ -24,7 +24,10 @@ define [
       nonce: req.query.nonce
     if validReq then next() else res.status(403).json(message: 'invalid wechat source server')
 
-  router.post '/', xmlparser({trim: false, explicitArray: false}),(req,res,next) ->
+  router.get '/callback', (req,res,next) ->
+    res.send req.query.echostr
+
+  router.post '/callback', xmlparser({trim: false, explicitArray: false}),(req,res,next) ->
     debug req.body
     data = 
       ToUserName: req.body.xml.fromusername
