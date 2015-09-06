@@ -81,7 +81,44 @@ define [
       else
         log "get user successful",result
         callback null,result
-  
+
+  aliasUser: (accessToken,user,callback) ->
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/user/info/updateremark?access_token=#{accessToken}",
+      openid: user.openid
+      remark: user.remark
+    ).on 'complete', (result) ->
+      if result.errcode != 0
+        log "failed to get user[#{openid}]",errmsg
+        callback errmsg
+      else
+        log "alias user successful",result
+        callback()
+
+  # get user info list
+  usersInfo: (accessToken,openidList,callback) ->
+    return callback('user id list is empty') unless openidList.length
+    list = []
+    for v,i in openidList
+      index = parseInt i/100
+      list[index] ?= []
+      list[index].push v
+    functions = list.map (arr) ->
+      (asyncCallback) ->
+        rest.postJson("https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=#{accessToken}",
+          user_list: ({openid: id} for id in arr) 
+        ).on 'complete', (result) ->
+          if result.errmsg
+            log "failed to get user group",errmsg
+            asyncCallback errmsg
+          else
+            log "get users info successful",result
+            asyncCallback null,result.user_info_list
+    async.parallel functions,(err,results) ->
+      if err?
+        callback err
+      else
+        callback null,(results.reduce (a,b) -> a.concat b)
+
   # get groups
   groups: (accessToken,callback) ->
     rest.get('https://api.weixin.qq.com/cgi-bin/groups/get',
@@ -145,16 +182,16 @@ define [
         callback null,group
 
   # remove group
-  #removeGroup: (accessToken,groupId,callback) ->
-  #  rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/delete?access_token=#{accessToken}",
-  #    group: { id: groupId }
-  #  ).on 'complete', (result) ->
-  #    if result.errmsg != 'ok'
-  #      log "failed to remove group #{groupId}",result.errmsg
-  #      callback result.errmsg
-  #    else
-  #      log "remove group successful",result
-  #      callback() 
+  removeGroup: (accessToken,groupId,callback) ->
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/delete?access_token=#{accessToken}",
+      group: { id: groupId }
+    ).on 'complete', (result) ->
+      if result.errmsg?.length and result.errmsg != 'ok'
+        log "failed to remove group #{groupId}",result.errmsg
+        callback result.errmsg
+      else
+        log "remove group successful",result
+        callback() 
 
   # set industry
   setIndustry: (accessToken,industries,callback) ->
@@ -180,4 +217,34 @@ define [
         callback result.errmsg
       else
         log "get template id  successful",result
-        callback null,result.template_id                       
+        callback null,result.template_id 
+
+
+  # send template message
+  sendTplMessage: (accessToken,opts,callback) ->
+    data = {}
+    tplConfig = config.wechat.templates[opts.type]
+    template = tplConfig.id
+    aliasConfig = {}
+    if tplConfig.alias
+      aliasConfig[v] = k for k,v of tplConfig.alias
+    for k,v of opts.data
+      if aliasConfig[k] then data[aliasConfig[k]] = {value: v} else data[k] = {value: v}
+    functions = opts.to.map (userId) ->
+      (asyncCallback) ->
+        rest.postJson("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=#{accessToken}",
+          touser: userId
+          template_id: template
+          data: data
+        ).on 'complete', (result) ->
+          if result.errcode != 0
+            log "failed to send tpl message",result.errmsg
+            asyncCallback result.errmsg
+          else
+            log "get template id  successful",result.msgid
+            asyncCallback null,result.msgid  
+    async.parallel functions,(err,results) ->
+      if err?
+        callback err
+      else
+        callback null,(results.reduce (a,b) -> a.concat b)

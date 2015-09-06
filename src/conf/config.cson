@@ -3,3 +3,14 @@ wechat:
   encodingAesKey: ''
   appId: ''
   appSecret: ''
+  templates:
+    eventHander:
+      id: 'template-id-in-your-mp-console'
+      alias:
+        first: 'title'
+        keyword1: 'event_id'
+        keyword2: 'desc'
+        keyword3: 'state'
+        keyword4: 'timestamp'
+        remark: 'info'
+
