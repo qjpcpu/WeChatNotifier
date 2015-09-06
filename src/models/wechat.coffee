@@ -20,6 +20,7 @@ define [
     return true if signature == params.signature
     log 'validate WeChat source failed, source query parameters is:', params
     false
+
   # fetch access token
   fetchAccessToken: (cb) ->
     rest.get('https://api.weixin.qq.com/cgi-bin/token',
@@ -96,9 +97,8 @@ define [
   
   # get group by user
   groupOfUser: (accessToken,openid,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/groups/getid',
-      query: { access_token: accessToken }
-      data: { openid: openid }
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/getid?access_token=#{accessToken}",
+      openid: openid 
     ).on 'complete', (result) ->
       if result.errmsg
         log "failed to get user group",errmsg
@@ -109,82 +109,75 @@ define [
 
   # create group
   createGroup: (accessToken,name,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/groups/create',
-      query: { access_token: accessToken }
-      data: { group: { name: name } }
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/create?access_token=#{accessToken}",
+      group: { name: name }
     ).on 'complete', (result) ->
       if result.errmsg
-        log "failed to create group #{name}",errmsg
-        callback errmsg
+        log "failed to create group #{name}",result.errmsg
+        callback result.errmsg
       else
         log "create group successful",result.group
         callback null,result.group
 
   # update group name
   updateGroup: (accessToken,group,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/groups/update',
-      query: { access_token: accessToken }
-      data: { group: { name: group.name, id: group.id } }
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/update?access_token=#{accessToken}",
+      group: { name: group.name, id: group.id } 
     ).on 'complete', (result) ->
       if result.errmsg != 'ok'
-        log "failed to update group #{group.name}",errmsg
-        callback errmsg
+        log "failed to update group #{group.name}",result.errmsg
+        callback result.errmsg
       else
         log "update group successful",result
         callback null,group
 
   # migrate user to another group
   migrateUser: (accessToken,groupId,userIds,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/groups/members/batchupdate',
-      query: { access_token: accessToken }
-      data: 
-        openid_list: userIds
-        to_groupid: groupId
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/members/batchupdate?access_token=#{accessToken}",
+      openid_list: userIds
+      to_groupid: groupId
     ).on 'complete', (result) ->
       if result.errmsg != 'ok'
-        log "failed to migrate users to  group #{groupId}",errmsg
-        callback errmsg
+        log "failed to migrate users to  group #{groupId}",result.errmsg
+        callback result.errmsg
       else
         log "migrate users to group #{groupId} successful",result
         callback null,group
 
   # remove group
-  removeGroup: (accessToken,groupId,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/groups/delete',
-      query: { access_token: accessToken }
-      data: { group: { id: groupId } }
-    ).on 'complete', (result) ->
-      if result.errmsg != 'ok'
-        log "failed to remove group #{groupId}",errmsg
-        callback errmsg
-      else
-        log "remove group successful",result
-        callback() 
+  #removeGroup: (accessToken,groupId,callback) ->
+  #  rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/delete?access_token=#{accessToken}",
+  #    group: { id: groupId }
+  #  ).on 'complete', (result) ->
+  #    if result.errmsg != 'ok'
+  #      log "failed to remove group #{groupId}",result.errmsg
+  #      callback result.errmsg
+  #    else
+  #      log "remove group successful",result
+  #      callback() 
 
   # set industry
   setIndustry: (accessToken,industries,callback) ->
     industrySet = {}
     industrySet["industry_id#{i + 1}"] = v for v,i in industries
-    rest.post('https://api.weixin.qq.com/cgi-bin/template/api_set_industry',
-      query: { access_token: accessToken }
-      data: industrySet
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/template/api_set_industry?access_token=#{accessToken}",
+      industrySet
     ).on 'complete', (result) ->
       if result.errcode != 0
-        log "failed to set industry",errmsg
-        callback errmsg
+        log "failed to set industry",result.errmsg
+        callback result.errmsg
       else
         log "set industries successful",result
         callback()  
 
   # get template
   template: (accessToken,shortId,callback) ->
-    rest.post('https://api.weixin.qq.com/cgi-bin/template/api_add_template',
-      query: { access_token: accessToken }
-      data: { template_id_short: shortId }
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/template/api_add_template?access_token=#{accessToken}",
+      template_id_short: shortId 
     ).on 'complete', (result) ->
       if result.errcode != 0
-        log "failed to get template",errmsg
-        callback errmsg
+        log "failed to get template",result.errmsg
+        callback result.errmsg
       else
         log "get template id  successful",result
         callback null,result.template_id                       
