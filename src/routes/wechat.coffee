@@ -22,6 +22,7 @@ define [
     validReq = WeChat.validate
       timestamp: req.query.timestamp
       nonce: req.query.nonce
+      signature: req.query.signature
     if validReq then next() else res.status(403).json(message: 'invalid wechat source server')
 
   router.get '/callback', (req,res,next) ->
