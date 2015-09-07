@@ -17,6 +17,8 @@
     "file-stream-rotator": "0.0.6",
     "jade": "~1.11.0",
     "js2xmlparser": "^1.0.0",
+    "leveldown": "^1.4.1",
+    "levelup": "^1.2.1",
     "merge": "^1.2.0",
     "moment": "^2.10.6",
     "morgan": "~1.6.1",
