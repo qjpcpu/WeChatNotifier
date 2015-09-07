@@ -37,7 +37,7 @@ define [
         result.expires_in -= 60
         expiredAt = moment().add(result.expires_in, 'seconds')
         log "fetch access token success, it would expire at #{expiredAt.format('HH:mm')}"
-        cb null,result.access_token,result.expires_in
+        cb null,result.access_token,expiredAt
 
   # get user list
   users: (accessToken,cb) ->

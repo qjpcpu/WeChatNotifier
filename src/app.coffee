@@ -50,6 +50,7 @@ define [
   app.use cookieParser()
   app.use express.static(path.join(path.dirname(), 'public'))
   app.use '/', routes
+  app.use '/users', users
   app.use '/wechat',wechat
   
   # catch 404 and forward to error handler
