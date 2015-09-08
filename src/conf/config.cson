@@ -13,4 +13,7 @@ wechat:
         keyword3: 'state'
         keyword4: 'timestamp'
         remark: 'info'
+  events:
+    subscribe: 'welcome'
+    unsubscribe: 'byebye'
 

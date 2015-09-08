@@ -30,13 +30,20 @@ define [
 
   router.post '/callback', xmlparser({trim: false, explicitArray: false}),(req,res,next) ->
     debug req.body
-    data = 
-      ToUserName: req.body.xml.fromusername
-      FromUserName: req.body.xml.tousername
-      CreateTime: req.body.xml.createtime
-      MsgType: 'text'
-      Content: 'echo back: ' + req.body.xml.content
-    str = js2xmlparser 'xml',data, { useCDATA: true }
-    res.send str
+    switch req.body.xml.msgtype
+      when 'event'
+        res.send ''
+      when 'text'
+        res.send ''
+      else
+        res.send ''
+    #data = 
+    #  ToUserName: req.body.xml.fromusername
+    #  FromUserName: req.body.xml.tousername
+    #  CreateTime: req.body.xml.createtime
+    #  MsgType: 'text'
+    #  Content: 'echo back: ' + req.body.xml.content
+    #str = js2xmlparser 'xml',data, { useCDATA: true }
+    #res.send str
 
   module.exports = router
