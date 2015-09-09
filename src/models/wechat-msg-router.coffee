@@ -20,6 +20,10 @@ define [
 
       rest.postJson(url,
         entity
+        { timeout: 4000 }
+      ).on('timeout',(ms) ->
+        log 'request timeout, maybe you request a wrong url',url
+        cb 'request timeout'
       ).on 'complete', (result) ->
         if result instanceof Error
           log 'err ocurrs',result
