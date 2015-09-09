@@ -2,10 +2,12 @@ define [
   'debug'
   '../conf/config'
   './wechat'
+  'restler'
   ], (
   debug
   Config
   WeChat
+  rest
 ) ->
   log = debug 'wechat-router'
   class WeChatMsgRouter
