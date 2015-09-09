@@ -3,7 +3,7 @@ define [
   'change-case'
   'restler'
   '../conf/config'
-  '../wechat'
+  './wechat'
   ], (
   debug
   Cc
