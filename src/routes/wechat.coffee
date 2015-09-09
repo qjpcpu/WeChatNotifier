@@ -7,6 +7,7 @@ define [
     'module'
     'change-case'
     '../models/wechat'
+    '../models/wechat-router'
     '../conf/config'
   ], (
     clone
@@ -17,6 +18,7 @@ define [
     module
     Cc
     WeChat
+    WeChatRouter
     config
 ) ->
   router = express.Router()
