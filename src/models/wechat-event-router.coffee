@@ -19,8 +19,8 @@ define [
       unless events[evt]
         log 'Swallow event', entity
         return cb(null,'')
-      return cb('no such event handler type') unless events[evt] in ['text','callback']
-      return cb(null,events[evt].words or '') if events[evt] == 'text'
+      return cb("no such event handler: #{events[evt].type}") unless events[evt].type in ['text','callback']
+      return cb(null,events[evt].words or '') if events[evt].type == 'text'
       return cb('no callback url') unless Config.callback?.url
 
       url = Config.callback.eventUrl or Config.callback.url
