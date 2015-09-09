@@ -14,6 +14,12 @@ define [
   config
 ) ->
   log = debug 'wechat'
+  calSignature: (seed) ->
+    timestamp = "#{moment().unix()}"
+    nonce = "#{Math.random()}"
+    signature = sha1 [seed,timestamp,nonce].sort().join('')
+    { timestamp: timestamp, nonce: nonce, signature: signature }
+
   # validate query parameters: nonce & timestamp & signature
   validate: (params) ->
     signature = sha1 [config.wechat.token,params.timestamp,params.nonce].sort().join('')

@@ -43,18 +43,24 @@ define [
         debug "error happens when handle #{req.body.xml}\nerr was: #{err}"
         res.status(500)
       else
+        response = {}
         if typeof data == 'object'
-          data.toUserName = xmlData.fromUserName
-          data.fromUserName = xmlData.toUserName
-          data.createTime = xmlData.createTime
-          newData = {}
           for k,v of data
             switch k
-              when 'locationX' then newData['Location_X'] = v
-              when 'locationY' then newData['Location_Y'] = v
-              else newData[Cc.pascalCase(k)] = v
-          data = js2xmlparser 'xml',newData, { useCDATA: true }
-        # now data is a string
-        res.send data
+              when 'locationX' then response['Location_X'] = v
+              when 'locationY' then response['Location_Y'] = v
+              else response[Cc.pascalCase(k)] = v
+          response.ToUserName = xmlData.fromUserName
+          response.FromUserName = xmlData.toUserName
+          response.CreateTime = xmlData.createTime              
+        else if typeof data == 'string'
+          tmp =
+            toUserName: xmlData.fromUserName
+            fromUserName: xmlData.toUserName
+            createTime: xmlData.createTime
+            content: data
+          response[Cc.pascalCase(k)] = v for k,v of tmp
+        response = js2xmlparser 'xml',response, { useCDATA: true }
+        res.send response
 
   module.exports = router

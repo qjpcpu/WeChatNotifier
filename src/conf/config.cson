@@ -14,6 +14,13 @@ wechat:
         keyword4: 'timestamp'
         remark: 'info'
   events:
-    subscribe: 'welcome'
-    unsubscribe: 'byebye'
+    subscribe:
+      type: 'callback'
+    unsubscribe: 
+      type: 'text'
+      words: 'byebye'
+
+callback:
+  url: 'http://abc.com/callback'
+  token: 'another-token'  # optional
 
