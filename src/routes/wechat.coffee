@@ -52,14 +52,15 @@ define [
               when 'locationX' then response['Location_X'] = v
               when 'locationY' then response['Location_Y'] = v
               else response[Cc.pascalCase(k)] = v
-          response.ToUserName = xmlData.fromUserName
-          response.FromUserName = xmlData.toUserName
-          response.CreateTime = xmlData.createTime              
+          response.ToUserName = xmlData.FromUserName
+          response.FromUserName = xmlData.ToUserName
+          response.CreateTime = xmlData.CreateTime              
         else if typeof data == 'string'
           tmp =
-            toUserName: xmlData.fromUserName
-            fromUserName: xmlData.toUserName
-            createTime: xmlData.createTime
+            toUserName: xmlData.FromUserName
+            fromUserName: xmlData.ToUserName
+            createTime: xmlData.CreateTime
+            msgType: 'text'
             content: data
           response[Cc.pascalCase(k)] = v for k,v of tmp
         response = js2xmlparser 'xml',response, { useCDATA: true }
