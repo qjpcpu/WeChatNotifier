@@ -22,5 +22,7 @@ wechat:
 
 callback:
   url: 'http://abc.com/callback'
+  eventUrl: 'http://abc.com/callback1'  # callback must contain either eventUrl or url
+  messageUrl: 'http://abc.com/callback2' # callback must contain either messageUrl or url
   token: 'another-token'  # optional
 
