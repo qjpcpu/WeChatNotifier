@@ -1,4 +1,4 @@
-define ['express','debug','module','../conf/config'], (express,debug,module,config) ->
+define ['express','debug','module','conf/config'], (express,debug,module,config) ->
   router = express.Router()
   debug = debug('http')
   

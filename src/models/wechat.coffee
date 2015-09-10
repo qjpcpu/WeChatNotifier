@@ -4,7 +4,7 @@ define [
   'debug'
   'sha1'
   'restler'
-  '../conf/config'
+  'conf/config'
   ], (
   async
   moment

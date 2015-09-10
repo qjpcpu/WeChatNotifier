@@ -1,7 +1,7 @@
 define [
-  './wechat-event-router'
-  './wechat-msg-router'
-  '../conf/config'
+  'models/wechat-event-router'
+  'models/wechat-msg-router'
+  'conf/config'
   ], (
   WeChatEventRouter
   WeChatMsgRouter

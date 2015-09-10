@@ -6,9 +6,9 @@ define [
     'debug'
     'module'
     'change-case'
-    '../models/wechat'
-    '../models/wechat-router'
-    '../conf/config'
+    'models/wechat'
+    'models/wechat-router'
+    'conf/config'
   ], (
     clone
     js2xmlparser

@@ -1,4 +1,4 @@
-define ['async','express','module','debug','../models/database','../models/wechat','../conf/config'],(async,express,module,debug,database,WeChat,Config) ->
+define ['async','express','module','debug','models/database','models/wechat','conf/config'],(async,express,module,debug,database,WeChat,Config) ->
   router = express.Router()
   debug = debug 'http'
 

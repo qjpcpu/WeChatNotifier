@@ -1,7 +1,7 @@
 define [
   'debug'
   'levelup'
-  '../conf/config'
+  'conf/config'
   ], (
   debug
   levelup

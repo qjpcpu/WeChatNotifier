@@ -1,10 +1,6 @@
-requirejs = require('requirejs')
+requirejs = require('../requirejs')
 
-requirejs.config
-  baseUrl: __dirname
-  nodeRequire: require
-
-requirejs ['debug','http','../app'], (debug,http,app) ->
+requirejs ['debug','http','app'], (debug,http,app) ->
   debug = debug('wechatnotifier:server')
 
   normalizePort = (val) ->

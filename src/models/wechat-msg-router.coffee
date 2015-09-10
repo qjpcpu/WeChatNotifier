@@ -1,7 +1,7 @@
 define [
   'debug'
-  '../conf/config'
-  './wechat'
+  'conf/config'
+  'models/wechat'
   'restler'
   ], (
   debug

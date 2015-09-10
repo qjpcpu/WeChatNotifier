@@ -2,8 +2,8 @@ define [
   'debug'
   'change-case'
   'restler'
-  '../conf/config'
-  './wechat'
+  'conf/config'
+  'models/wechat'
   ], (
   debug
   Cc

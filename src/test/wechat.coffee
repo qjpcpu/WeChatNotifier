@@ -1,10 +1,10 @@
-load = require('./test-loader')
+load = require('../requirejs')
 expect = require 'expect.js'
 
 describe 'WeChat', ->
   WeChat = undefined
   before (done) ->
-    load ['../models/wechat'], (wechat) ->
+    load ['models/wechat'], (wechat) ->
       WeChat = wechat
       done()
   

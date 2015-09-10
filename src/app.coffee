@@ -8,9 +8,9 @@ define [
     'file-stream-rotator'
     'cookie-parser'
     'body-parser'
-    './routes/index'
-    './routes/users'
-    './routes/wechat'
+    'routes/index'
+    'routes/users'
+    'routes/wechat'
   ], (
     module
     express
