@@ -254,3 +254,36 @@ define [
         callback err
       else
         callback null,(results.reduce (a,b) -> a.concat b)
+
+  # create menu
+  createMenu: (accessToken,menu,callback) ->
+    rest.postJson("https://api.weixin.qq.com/cgi-bin/menu/create?access_token=#{accessToken}",
+      button: menu
+    ).on 'complete', (result) ->
+      if result.errcode != 0
+        log "failed to create menu",result.errmsg
+        callback result.errmsg
+      else
+        log "create menu  successful",result
+        callback()
+
+  # clear menu
+  removeMenu: (accessToken,callback) ->
+    rest.get("https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=#{accessToken}").on 'complete', (result) ->
+      if result.errcode != 0
+        log "failed to clear menu",result.errmsg
+        callback result.errmsg
+      else
+        log "remove menu  successful",result
+        callback()
+
+  # get menu
+  getMenu: (accessToken,callback) ->
+    rest.get("https://api.weixin.qq.com/cgi-bin/menu/get?access_token=#{accessToken}").on 'complete', (result) ->
+      if result.menu
+        log "get menu  successful",result.menu
+        callback(null,result.menu.button)        
+      else
+        log "failed to get menu",result.errmsg
+        callback 'fail to get menu'      
+

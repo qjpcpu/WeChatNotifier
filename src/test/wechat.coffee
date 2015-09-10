@@ -21,6 +21,40 @@ describe 'WeChat', ->
       WeChat.fetchAccessToken (err,token,expiresIn) ->
         accessToken = token
         done()
+    
+    describe '#createMenu', ->
+      it 'should create menu', (done) ->
+        menu = [    
+          {
+            'type': 'click'
+            'name': '主菜单A'
+            'key': 'level1_menu'
+          }
+          {
+            'name': '主菜单B'
+            'sub_button': [
+              {
+                'type': 'view'
+                'name': '百度一下'
+                'url': 'http://www.baidu.com/'
+              }
+              {
+                'type': 'click'
+                'name': '赞一下我'
+                'key': 'star_menu'
+              }
+            ]
+          }
+        ]
+        WeChat.createMenu accessToken,menu, (err) ->
+          expect(err?).to.eql false
+          WeChat.getMenu accessToken, (err,m) ->
+            expect(err?).to.eql false
+            WeChat.removeMenu accessToken, (err2) ->
+              expect(err2?).to.eql false
+              WeChat.getMenu accessToken, (err,m) ->
+                expect(err?).to.eql true
+                done()
 
     describe '#users', ->
       it 'should get users list', (done) ->

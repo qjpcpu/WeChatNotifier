@@ -13,12 +13,34 @@ wechat:
         keyword3: 'state'
         keyword4: 'timestamp'
         remark: 'info'
-  events:
+  events:                # optional
     subscribe:
       type: 'callback'
     unsubscribe: 
       type: 'text'
       words: 'byebye'
+  menu: [                # optional
+    {
+      'type': 'click'
+      'name': '主菜单1'
+      'key': 'level1_menu'
+    }
+    {
+      'name': '主菜单2'
+      'sub_button': [
+        {
+          'type': 'view'
+          'name': '百度一下'
+          'url': 'http://www.baidu.com/'
+        }
+        {
+          'type': 'click'
+          'name': '赞一下我'
+          'key': 'star_menu'
+        }
+      ]
+    }
+  ]    
 
 callback:
   url: 'http://abc.com/callback'
