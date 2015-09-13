@@ -4,7 +4,33 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/', (req, res, next) ->
     res.send 'respond with a resource'
-    
+ 
+  router.post '/alias', (req,res,next) ->
+    data = req.body
+    return res.status(403).json(message: 'no alias name') unless data.alias
+    return res.status(403).json(message: 'no user found') unless data.userId
+    async.waterfall [
+      ((callback) ->
+        database.getJson 'wechatToken', (err,wechatToken) ->
+          if wechatToken?.token?.length and moment() < moment(wechatToken?.expiredAt) and (not err?)
+            callback null,wechatToken.token
+          else
+            WeChat.fetchAccessToken (err,token,expiredAt) ->
+              database.putJson 'wechatToken', { token: token, expiredAt: expiredAt.toJSON() }
+              callback null,token     
+      )    
+    ],(err,token) ->
+      if err
+        debug 'failed to fetch token',err
+        res.status(403).json message: 'failed to fetch token'
+      else
+        WeChat.aliasUser token,{openid: data.userId,remark: data.alias }, (err1) ->
+          if err1
+            debug 'failed to alias user',err1
+            res.status(403).json message: 'failed to alias user'
+          else
+            res.send ''
+
   router.post '/attach_role', (req,res,next) ->
     data = req.body
     return res.status(403).json(message: 'no role specified') unless data.role
