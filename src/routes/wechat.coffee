@@ -48,7 +48,7 @@ define [
       else
         response = {}
         if typeof data == 'object'
-          response[Cc.pascalCase(k)] = v for k,v of data             
+          response[Cc.camelCase(k)] = v for k,v of data             
         else if typeof data == 'string'
           response.msgType = 'text'
           response.content = data
