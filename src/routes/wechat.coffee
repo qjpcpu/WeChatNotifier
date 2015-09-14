@@ -47,23 +47,14 @@ define [
       else
         response = {}
         if typeof data == 'object'
-          for k,v of data
-            switch k
-              when 'locationX' then response['Location_X'] = v
-              when 'locationY' then response['Location_Y'] = v
-              else response[Cc.pascalCase(k)] = v
-          response.ToUserName = xmlData.FromUserName
-          response.FromUserName = xmlData.ToUserName
-          response.CreateTime = xmlData.CreateTime              
+          response[Cc.pascalCase(k)] = v for k,v of data             
         else if typeof data == 'string'
-          tmp =
-            toUserName: xmlData.FromUserName
-            fromUserName: xmlData.ToUserName
-            createTime: xmlData.CreateTime
-            msgType: 'text'
-            content: data
-          response[Cc.pascalCase(k)] = v for k,v of tmp
-        response = js2xmlparser 'xml',response, { useCDATA: true }
-        res.send response
+          response.msgType = 'text'
+          response.content = data
+
+        response.toUser = xmlData.FromUserName
+        response.fromUser = xmlData.ToUserName
+        response.time = xmlData.CreateTime
+        res.render "wechat/#{response.msgType}", response
 
   module.exports = router
