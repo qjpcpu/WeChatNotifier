@@ -21,11 +21,11 @@ define [
           if Config.wechat.messages?.length > 0
             cfg = null
             for c in Config.wechat.messages
-              if c.match and (new RegExp(c.match).test entity.content
+              if c.match? and (new RegExp(c.match)).test entity.content
                 cfg = c
                 callback null,cfg
                 break
-              else if c.equals and c.equals == entity.content
+              else if c.equals? and c.equals == entity.content
                 cfg = c
                 callback null,cfg
                 break
