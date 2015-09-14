@@ -19,6 +19,12 @@ wechat:
     unsubscribe: 
       type: 'text'
       words: 'byebye'
+  messages: [
+    {
+      match: /.*/
+      type: 'callback'    # or tuling or text
+    }
+  ]
   menu: [                # optional
     {
       'type': 'click'

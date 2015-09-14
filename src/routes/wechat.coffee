@@ -38,8 +38,9 @@ define [
     xmlData = clone(req.body.xml)
     debug xmlData
     jsData = {}
-    for k,v of xmlData
+    for k,v of xmlData when k not in ['FromUserName','ToUserName','CreateTime']
       jsData[Cc.camelCase(k)] = v
+    jsData.fromUser = xmlData.FromUserName
     (new WeChatRouter()).handle jsData,(err,data) ->
       if err
         debug "error happens when handle #{req.body.xml}\nerr was: #{err}"

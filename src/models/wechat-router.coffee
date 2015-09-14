@@ -11,4 +11,5 @@ define [
     handle: (entity,cb) ->
       switch entity.msgType
         when 'event' then (new WeChatEventRouter()).handle entity,cb
-        else (new WeChatMsgRouter()).handle entity,cb
+        when 'text' then  (new WeChatMsgRouter()).handle entity,cb
+        else cb("no router for #{entity.msgType}")
