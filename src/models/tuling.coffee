@@ -19,7 +19,7 @@ define ['restler','conf/config'], (rest,config) ->
             msgType: 'news'
             articles: []
           for train in result.list
-            break if message.articles.length > 10
+            break if message.articles.length > 9
             message.articles.push
               title: "#{train.trainnum} #{train.starttime}-#{train.endtime}"
               description: "车次: #{train.trainnum}\n始发站: #{train.start}\n发车时间: #{train.starttime}\n终点站: #{train.terminal}\n到站时间: #{train.endtime}"
@@ -30,7 +30,7 @@ define ['restler','conf/config'], (rest,config) ->
             msgType: 'news'
             articles: []
           for news in result.list
-            break if message.articles.length > 10
+            break if message.articles.length > 9
             message.articles.push
               title: news.article
               url: news.detailurl
@@ -39,7 +39,7 @@ define ['restler','conf/config'], (rest,config) ->
             msgType: 'news'
             articles: []
           for dish in result.list
-            break if message.articles.length > 10
+            break if message.articles.length > 9
             message.articles.push
               title: dish.name
               description: dish.info
