@@ -82,8 +82,8 @@ define [
         lang: 'zh_CN'
     ).on 'complete', (result) ->
       if result.errmsg
-        log "failed to get user[#{openid}]",errmsg
-        callback errmsg
+        log "failed to get user[#{openid}]",result.errmsg
+        callback result.errmsg
       else
         log "get user successful",result
         callback null,result
@@ -94,8 +94,8 @@ define [
       remark: user.remark
     ).on 'complete', (result) ->
       if result.errcode != 0
-        log "failed to get user[#{openid}]",errmsg
-        callback errmsg
+        log "failed to get user[#{openid}]",result.errmsg
+        callback result.errmsg
       else
         log "alias user successful",result
         callback()
@@ -114,8 +114,8 @@ define [
           user_list: ({openid: id} for id in arr) 
         ).on 'complete', (result) ->
           if result.errmsg
-            log "failed to get user group",errmsg
-            asyncCallback errmsg
+            log "failed to get user group",result.errmsg
+            asyncCallback result.errmsg
           else
             log "get users info successful",result
             asyncCallback null,result.user_info_list
@@ -132,8 +132,8 @@ define [
         access_token: accessToken
     ).on 'complete', (result) ->
       if result.errmsg
-        log "failed to get groups",errmsg
-        callback errmsg
+        log "failed to get groups",result.errmsg
+        callback result.errmsg
       else
         log "get groups successful",result.groups
         callback null,result.groups
@@ -144,8 +144,8 @@ define [
       openid: openid 
     ).on 'complete', (result) ->
       if result.errmsg
-        log "failed to get user group",errmsg
-        callback errmsg
+        log "failed to get user group",result.errmsg
+        callback result.errmsg
       else
         log "get group successful",result
         callback null,result

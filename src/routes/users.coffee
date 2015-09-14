@@ -2,8 +2,39 @@ define ['async','express','module','debug','models/database','models/wechat','co
   router = express.Router()
   debug = debug 'http'
 
+  refreshToken = (callback) ->
+    database.getJson 'wechatToken', (err,wechatToken) ->
+      if wechatToken?.token?.length and moment() < moment(wechatToken?.expiredAt) and (not err?)
+        callback null,wechatToken.token
+      else
+        WeChat.fetchAccessToken (err,token,expiredAt) ->
+          database.putJson 'wechatToken', { token: token, expiredAt: expiredAt.toJSON() }
+          callback null,token  
+
   router.get '/', (req, res, next) ->
     res.send 'respond with a resource'
+
+
+  router.get '/info', (req,res,next) ->
+    async.waterfall [
+      ((callback) ->
+        if req.query.id?.length then callback() else callback('no user id found')
+      )       
+      ((callback) ->
+        refreshToken callback
+      )    
+    ],(err,token) ->
+      if err
+        debug 'failed to fetch token',err
+        res.status(403).json message: 'failed to fetch token'
+      else
+        debug req.query.id.split(',')
+        WeChat.usersInfo token,req.query.id.split(','), (err1,data) ->
+          if err1
+            debug 'failed to get users info',err1
+            res.status(403).json message: 'failed to get users info'
+          else
+            res.json data
  
   router.post '/alias', (req,res,next) ->
     data = req.body
@@ -11,13 +42,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
     return res.status(403).json(message: 'no user found') unless data.userId
     async.waterfall [
       ((callback) ->
-        database.getJson 'wechatToken', (err,wechatToken) ->
-          if wechatToken?.token?.length and moment() < moment(wechatToken?.expiredAt) and (not err?)
-            callback null,wechatToken.token
-          else
-            WeChat.fetchAccessToken (err,token,expiredAt) ->
-              database.putJson 'wechatToken', { token: token, expiredAt: expiredAt.toJSON() }
-              callback null,token     
+        refreshToken callback
       )    
     ],(err,token) ->
       if err
@@ -96,5 +121,22 @@ define ['async','express','module','debug','models/database','models/wechat','co
           data: data.data
         WeChat.sendTplMessage data.wechatToken,opts,(err,msg) ->
           res.json message: 'ok'
+
+  router.get '/:userId', (req,res,next) ->
+    async.waterfall [
+      ((callback) ->
+        refreshToken callback
+      )    
+    ],(err,token) ->
+      if err
+        debug 'failed to fetch token',err
+        res.status(403).json message: 'failed to fetch token'
+      else
+        WeChat.user token,req.params.userId, (err1,data) ->
+          if err1
+            debug 'failed to get user',err1
+            res.status(403).json message: 'failed to get user'
+          else
+            res.json data
 
   module.exports = router            
