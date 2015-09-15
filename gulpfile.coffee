@@ -5,6 +5,8 @@ rename = require("gulp-rename")
 runSequence = require('run-sequence')
 del = require 'del'
 mocha = require 'gulp-mocha'
+chmod = require 'gulp-chmod'
+insert = require 'gulp-insert'
 
 gulp.task 'default', (cb) ->
   console.log 'nothing in default'
@@ -17,6 +19,7 @@ gulp.task 'clean', ->
     'routes'
     'conf'
     'test'
+    'cli'
     '*.js'
   ]
 
@@ -31,9 +34,20 @@ gulp.task 'coffee', ->
 gulp.task 'config', ->
   gulp.src('src/**/*.cson').pipe gulp.dest('.')
 
+gulp.task 'cli', ['coffee'], (cb) ->
+  gulp.src('cli/wcn.js')
+    .pipe rename((path) -> path.extname = '')
+    .pipe insert.prepend("#!/usr/bin/env node\n")
+    .pipe chmod({owner: {execute: true}})
+    .pipe gulp.dest 'cli/'
+    .on 'end', ->
+      del('cli/wcn.js').then -> cb()
+  null
+  
+
 # build all coffee & config files
-gulp.task 'build', ->
-   runSequence 'clean',['config','coffee']
+gulp.task 'build', (cb) ->
+   runSequence 'clean',['config','coffee'], cb
 
 # start serve
 gulp.task 'serve', ->
