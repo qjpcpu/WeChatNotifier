@@ -21,7 +21,7 @@ wechat:
       words: 'byebye'
   messages: [
     {
-      match: /.*/
+      match: '.*'
       type: 'callback'    # or tuling or text
     }
   ]
