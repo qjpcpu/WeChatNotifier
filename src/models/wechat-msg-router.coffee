@@ -29,9 +29,9 @@ define [
                 cfg = c
                 callback null,cfg
                 break
-            callback('no matched message') unless cfg
+            callback(null,{type: 'callback'}) unless cfg
           else
-            callback('swallow messge')
+            callback null,{type: 'callback'}
         )
       ], (err,cfg) ->
         if err
