@@ -51,3 +51,8 @@ requirejs ['debug','http','app'], (debug,http,app) ->
   server.listen port
   server.on 'error', onError
   server.on 'listening', onListening
+
+  process.on 'uncaughtException', (err) ->
+    console.error((new Date).toUTCString() + ' uncaughtException:', err.message)
+    console.error(err.stack)
+    process.exit(1)
