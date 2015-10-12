@@ -1,4 +1,4 @@
-# WeChatNotifier
+# WeChatNotifier(企业号)
 
 目的是利用微信作为消息通知器，能做到easy to config & ready to use. 并且能够非常容易地作为依赖服务存在，比如：能够轻松集成到OP的告警系统里去。
 
