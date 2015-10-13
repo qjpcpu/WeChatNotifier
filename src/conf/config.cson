@@ -1,8 +1,8 @@
 wechat:
-  token: 'sdfadfasfwewrewervcxvxcv'
-  encodingAesKey: 'OrV1UD4i7luPoz4co2hEBFkvL88hooFXzzUoMpEAiut'
-  corpId: 'wx7e068dc8d0c5fa59'
-  corpSecret: '8qv7lI6FZSR9CvKlIh7MX5I13Hv3YmNVK7XX2ASRqtIH6kxKTti1yKIukmKtSUvD'
+  token: ''
+  encodingAesKey: ''
+  corpId: ''
+  corpSecret: ''
   events:                # optional
     subscribe:
       type: 'callback'
