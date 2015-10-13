@@ -6,6 +6,9 @@ define [
   'restler'
   'conf/config'
   'wechat-crypto'
+  'module'
+  'path'
+  'jade'
   ], (
   async
   moment
@@ -14,6 +17,9 @@ define [
   rest
   config
   WXBizMsgCrypt
+  module
+  path
+  jade
 ) ->
   log = debug 'wechat'
   calSignature: (seed) ->
@@ -29,10 +35,13 @@ define [
     log 'validate WeChat source failed, source query parameters is:', params
     false
 
-  # validate query parameters: nonce & timestamp & signature
   encrypt: (message) ->
     cryptor = new WXBizMsgCrypt(config.wechat.token, config.wechat.encodingAesKey, config.wechat.corpId)
-    cryptor.encrypt(message)
+    message = cryptor.encrypt(message)
+    timestamp = moment().unix()
+    nonce = (Math.random() * 10000000).toFixed(0)
+    signature = sha1([config.wechat.token,timestamp,nonce,message].sort().join(''))
+    { message: message, timestamp: timestamp, nonce: nonce, signature: signature}    
 
   decrypt: (message) ->
     cryptor = new WXBizMsgCrypt(config.wechat.token, config.wechat.encodingAesKey, config.wechat.corpId)
@@ -295,5 +304,9 @@ define [
         callback(null,result.menu.button)        
       else
         log "failed to get menu",result.errmsg
-        callback 'fail to get menu'      
+        callback 'fail to get menu' 
+
+  render: (view,locals,cb) ->
+    file = path.join path.dirname(module.uri),"../views/wechat/#{view}.jade"
+    jade.renderFile file,locals,cb
 

@@ -1,8 +1,8 @@
-define ['express','debug','module','conf/config'], (express,debug,module,config) ->
+define ['express','debug','module','conf/config','models/wechat','xml2js'], (express,debug,module,config,WeChat,xml2js) ->
   router = express.Router()
-  debug = debug('http')
+  log = debug('http')
   
   router.get '/', (req, res, next) ->
-    res.render 'index', title: 'Express'
+    res.render 'index', title: 'WeChatNotifier'
   
   module.exports = router
