@@ -24,17 +24,28 @@ define [
   router = express.Router()
   debug = debug('http')
   
-  router.use (req,res,next) ->
-    validReq = WeChat.validate
+  router.use '/callback',xmlparser({trim: false,normalize: false,normalizeTags: false, explicitArray: false}), (req,res,next) ->
+    if (not req.query.echostr?) and (not req.body.xml?)
+      res.status(403).json(message: 'invalid request')
+      return
+    validReq = WeChat.validateUrl
       timestamp: req.query.timestamp
       nonce: req.query.nonce
-      signature: req.query.signature
-    if validReq then next() else res.status(403).json(message: 'invalid wechat source server')
+      signature: req.query.msg_signature
+      message: req.query.echostr or req.body.xml
+    unless validReq
+      res.status(403).json(message: 'invalid wechat source server')
+    else
+      if req.query.echostr
+        req.query.echostr = WeChat.decrypt req.query.echostr
+      else
+        req.query.xml.Encrypt = WeChat.decrypt req.query.xml.Encrypt
+      next()
 
-  router.get '/callback', (req,res,next) ->
+  router.get '/callback', (req,res,next) -> 
     res.send req.query.echostr
 
-  router.post '/callback', xmlparser({trim: false,normalize: false,normalizeTags: false, explicitArray: false}),(req,res,next) ->
+  router.post '/callback',(req,res,next) ->  
     xmlData = clone(req.body.xml)
     debug xmlData
     jsData = {}

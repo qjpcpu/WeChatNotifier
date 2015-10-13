@@ -5,6 +5,7 @@ define [
   'sha1'
   'restler'
   'conf/config'
+  'wechat-crypto'
   ], (
   async
   moment
@@ -12,6 +13,7 @@ define [
   sha1
   rest
   config
+  WXBizMsgCrypt
 ) ->
   log = debug 'wechat'
   calSignature: (seed) ->
@@ -21,19 +23,27 @@ define [
     { timestamp: timestamp, nonce: nonce, signature: signature }
 
   # validate query parameters: nonce & timestamp & signature
-  validate: (params) ->
-    signature = sha1 [config.wechat.token,params.timestamp,params.nonce].sort().join('')
+  validateUrl: (params) ->
+    signature = sha1 [config.wechat.token,params.timestamp,params.nonce,params.message].sort().join('')
     return true if signature == params.signature
     log 'validate WeChat source failed, source query parameters is:', params
     false
 
+  # validate query parameters: nonce & timestamp & signature
+  encrypt: (message) ->
+    cryptor = new WXBizMsgCrypt(config.wechat.token, config.wechat.encodingAesKey, config.wechat.corpId)
+    cryptor.encrypt(message)
+
+  decrypt: (message) ->
+    cryptor = new WXBizMsgCrypt(config.wechat.token, config.wechat.encodingAesKey, config.wechat.corpId)
+    cryptor.decrypt(message).message
+
   # fetch access token
   fetchAccessToken: (cb) ->
-    rest.get('https://api.weixin.qq.com/cgi-bin/token',
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/gettoken',
       query:
-        grant_type: 'client_credential'
-        appid: config.wechat.appId
-        secret: config.wechat.appSecret
+        corpid: config.wechat.corpId
+        corpsecret: config.wechat.corpSecret
     ).on "complete", (result) ->
       if result.errmsg
         log 'fetch wechat access token failed',result

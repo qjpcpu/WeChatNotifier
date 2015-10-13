@@ -1,18 +1,8 @@
 wechat:
-  token: ''
-  encodingAesKey: ''
-  appId: ''
-  appSecret: ''
-  templates:
-    eventHander:
-      id: 'template-id-in-your-mp-console'
-      alias:
-        first: 'title'
-        keyword1: 'event_id'
-        keyword2: 'desc'
-        keyword3: 'state'
-        keyword4: 'timestamp'
-        remark: 'info'
+  token: 'sdfadfasfwewrewervcxvxcv'
+  encodingAesKey: 'OrV1UD4i7luPoz4co2hEBFkvL88hooFXzzUoMpEAiut'
+  corpId: 'wx7e068dc8d0c5fa59'
+  corpSecret: '8qv7lI6FZSR9CvKlIh7MX5I13Hv3YmNVK7XX2ASRqtIH6kxKTti1yKIukmKtSUvD'
   events:                # optional
     subscribe:
       type: 'callback'
