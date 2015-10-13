@@ -41,7 +41,7 @@ define [
         next()
       else
         decryptMsg = WeChat.decrypt req.body.xml.Encrypt
-        xml2js.parseString decryptMsg, (err,msg) ->
+        xml2js.parseString decryptMsg,{explicitArray : false}, (err,msg) ->
           if err
             log decryptMsg,err
             res.status(200)
