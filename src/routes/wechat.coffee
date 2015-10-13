@@ -32,7 +32,7 @@ define [
       timestamp: req.query.timestamp
       nonce: req.query.nonce
       signature: req.query.msg_signature
-      message: req.query.echostr or req.body.xml
+      message: req.query.echostr or req.body.xml.Encrypt
     unless validReq
       res.status(403).json(message: 'invalid wechat source server')
     else
