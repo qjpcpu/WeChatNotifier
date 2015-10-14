@@ -38,7 +38,7 @@ define [
   encrypt: (message) ->
     cryptor = new WXBizMsgCrypt(config.wechat.token, config.wechat.encodingAesKey, config.wechat.corpId)
     message = cryptor.encrypt(message)
-    timestamp = moment().unix()
+    timestamp = "#{moment().unix()}"
     nonce = (Math.random() * 10000000).toFixed(0)
     signature = sha1([config.wechat.token,timestamp,nonce,message].sort().join(''))
     { message: message, timestamp: timestamp, nonce: nonce, signature: signature}    
