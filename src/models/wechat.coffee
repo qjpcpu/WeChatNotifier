@@ -106,86 +106,140 @@ define [
         id: opts.id
     ).once 'complete', (err) ->
       if err.errcode == 0 then cb() else cb(err.errmsg)
-      
-  # get user list
-  users: (accessToken,cb) ->
-    handler = 
-      userList: []
-      nextOpenid: null
 
-    async.forever(
-        ((next) ->
-          rest.get('https://api.weixin.qq.com/cgi-bin/user/get',
-            query:
-              access_token: accessToken  
-              next_openid:  handler.nextOpenid
-          ).on 'complete', (result) ->
-            if result.errmsg?
-               next result.errmsg
-            else
-              handler.userList.push result.data.openid... if result.data.openid?.length
-              if result.openid?.length
-                handler.nextOpenid = result.openid 
-                next()
-              else 
-                next('done')
-        )
-        ((err) ->
-            log "get #{handler.userList.length} wechat subscribers."
-            if err == 'done' then cb(null,handler.userList) else cb(err,[])
-        )
-    )
+  users: (opts,cb) ->
+    switch opts.status
+      when 'all' then tag = 0
+      when 'watched' then tag = 1
+      when 'disabled' then tag = 2
+      when 'unwatched' then tag = 4
+      else tag = 1
+    if opts.detail
+      url = 'https://qyapi.weixin.qq.com/cgi-bin/user/list'
+    else
+      url = 'https://qyapi.weixin.qq.com/cgi-bin/user/simplelist'
+    rest.get(url,
+      query:
+        access_token: opts.accessToken
+        department_id: opts.id or 1
+        fetch_child: (if opts.recursive then 1 else 0)
+        status: tag
+    ).once 'complete', (res) ->
+      if res.errcode == 0
+        cb(null,res.userlist)
+      else
+        cb res.errmsg
+
   # get certain user
-  user: (accessToken,openid,callback) ->
-    rest.get('https://api.weixin.qq.com/cgi-bin/user/info',
+  user: (accessToken,id,callback) ->
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/user/get',
       query:
         access_token: accessToken
-        openid: openid
-        lang: 'zh_CN'
+        userid: id
     ).on 'complete', (result) ->
-      if result.errmsg
-        log "failed to get user[#{openid}]",result.errmsg
+      if result.errcode != 0
+        log "failed to get user[#{id}]",result.errmsg
         callback result.errmsg
       else
         log "get user successful",result
         callback null,result
 
-  aliasUser: (accessToken,user,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/user/info/updateremark?access_token=#{accessToken}",
-      openid: user.openid
-      remark: user.remark
-    ).on 'complete', (result) ->
-      if result.errcode != 0
-        log "failed to get user[#{openid}]",result.errmsg
-        callback result.errmsg
-      else
-        log "alias user successful",result
-        callback()
+  createUser: (opts,cb) ->
+    switch opts.sex
+      when 'male' then opts.sex = 1
+      when 'female' then opts.sex = 2
+      else opts.sex = undefined
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/user/create?access_token=#{opts.accessToken}",
+      userid: opts.id
+      name: opts.name or opts.id
+      department: (if opts.departmentIds?.length > 0 then opts.departmentIds else [1])
+      position: opts.position
+      mobile: opts.mobile
+      email: opts.email
+      gender: opts.sex
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
 
-  # get user info list
-  usersInfo: (accessToken,openidList,callback) ->
-    return callback('user id list is empty') unless openidList.length
-    list = []
-    for v,i in openidList
-      index = parseInt i/100
-      list[index] ?= []
-      list[index].push v
-    functions = list.map (arr) ->
-      (asyncCallback) ->
-        rest.postJson("https://api.weixin.qq.com/cgi-bin/user/info/batchget?access_token=#{accessToken}",
-          user_list: ({openid: id} for id in arr) 
-        ).on 'complete', (result) ->
-          if result.errmsg
-            log "failed to get user group",result.errmsg
-            asyncCallback result.errmsg
-          else
-            log "get users info successful",result
-            asyncCallback null,result.user_info_list
-    async.parallel functions,(err,results) ->
-      if err?
-        callback err
-      else
-        callback null,(results.reduce (a,b) -> a.concat b)
+  updateUser: (opts,cb) ->
+    if opts.sex
+      switch opts.sex
+        when 'male' then opts.sex = 1
+        when 'female' then opts.sex = 2
+        else delete opts.sex
+    if opts.state
+      switch opts.state
+        when 'enable' then opts.state = 1
+        when 'disable' then opts.state = 0
+        else delete opts.state
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/user/update?access_token=#{opts.accessToken}",
+      userid: opts.id
+      name: opts.name
+      department: opts.departmentIds
+      position: opts.position
+      mobile: opts.mobile
+      email: opts.email
+      gender: opts.sex
+      enable: opts.state
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
+
+  # delete user: opts.id is userid
+  # delete users: opts.id is user list (Array)
+  deleteUser: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/user/batchdelete?access_token=#{opts.accessToken}",
+      useridlist: if typeof opts.id == 'string' then [opts.id] else opts.id
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
+
+  inviteUser: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/invite/send?access_token=#{opts.accessToken}",
+      userid: opts.id        
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb(null,res.type) else cb(res.errmsg)
+
+  formatMessage: (msg) ->
+    # if you want send to all users, msg.users should be '@all'
+    opts = 
+      touser: if typeof msg.users == 'object' then msg.users.join('|') else msg.users
+      toparty: if typeof msg.departmentIds == 'object' then msg.departmentIds.join('|') else msg.departmentIds
+      totag: if typeof msg.tags == 'object' then msg.tags.join('|') else msg.tags
+      msgtype: msg.type or 'text'
+      agentid: msg.appId
+      safe: if msg.encrypt then 1 else 0
+    switch opts.msgtype
+      when 'text' then opts[opts.msgtype] = { content: msg.body }
+      when 'image','voice','file' then opts[opts.msgtype] = { media_id: msg.body.mediaId }
+      when 'video'
+        opts[opts.msgtype] = 
+          media_id: msg.body.mediaId
+          title: msg.body.title
+          description: msg.body.description
+      when 'news'
+        if msg.body instanceof Array
+          posts = []
+          for a,i in msg.body when i < 10
+            posts.push
+              title: a.title
+              description: a.description
+              url: a.url
+              picurl: a.picUrl
+          opts[opts.msgtype] = articles: posts
+        else
+          opts[opts.msgtype] = articles: []
+    opts
+  
+  # opts:
+  # appId,应用id
+  # type: 消息类型
+  # users/tags/departmentIds(Array/String)(Optional)
+  # body(object/Array/string)
+  sendMessage: (opts,cb) ->
+    wc = this
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=#{opts.accessToken}",
+      wc.formatMessage(opts)
+    ).once 'complete', (res) ->
+      log "send message response: #{res}"
+      if res.errcode == 0 then cb() else cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
 
   # get groups
   groups: (accessToken,callback) ->
