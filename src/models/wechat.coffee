@@ -241,139 +241,57 @@ define [
       log "send message response: #{res}"
       if res.errcode == 0 then cb() else cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
 
-  # get groups
-  groups: (accessToken,callback) ->
-    rest.get('https://api.weixin.qq.com/cgi-bin/groups/get',
-      query:
-        access_token: accessToken
-    ).on 'complete', (result) ->
-      if result.errmsg
-        log "failed to get groups",result.errmsg
-        callback result.errmsg
+  tags: (opts,cb) ->
+    rest.get("https://qyapi.weixin.qq.com/cgi-bin/tag/list?access_token=#{opts.accessToken}").once 'complete', (res) ->
+      if res.errcode == 0
+        list = ({id: t.tagid, name: t.tagname} for t in res.taglist)
+        cb(null,list)
       else
-        log "get groups successful",result.groups
-        callback null,result.groups
+        cb(res.errmsg)
   
-  # get group by user
-  groupOfUser: (accessToken,openid,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/getid?access_token=#{accessToken}",
-      openid: openid 
-    ).on 'complete', (result) ->
-      if result.errmsg
-        log "failed to get user group",result.errmsg
-        callback result.errmsg
+  createTag: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/tag/create?access_token=#{opts.accessToken}",
+      tagname: opts.name
+    ).once 'complete', (res) ->
+      if res.errcode == 0
+        cb(null,{id: res.tagid, name: opts.name})
       else
-        log "get group successful",result
-        callback null,result
+        cb(res.errmsg)
 
-  # create group
-  createGroup: (accessToken,name,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/create?access_token=#{accessToken}",
-      group: { name: name }
-    ).on 'complete', (result) ->
-      if result.errmsg
-        log "failed to create group #{name}",result.errmsg
-        callback result.errmsg
-      else
-        log "create group successful",result.group
-        callback null,result.group
+  renameTag: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/tag/update?access_token=#{opts.accessToken}",
+      tagid: opts.id
+      tagname: opts.name
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
 
-  # update group name
-  updateGroup: (accessToken,group,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/update?access_token=#{accessToken}",
-      group: { name: group.name, id: group.id } 
-    ).on 'complete', (result) ->
-      if result.errmsg != 'ok'
-        log "failed to update group #{group.name}",result.errmsg
-        callback result.errmsg
-      else
-        log "update group successful",result
-        callback null,group
+  deleteTag: (opts,cb) ->
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/tag/delete',
+      query: 
+        access_token: opts.accessToken
+        tagid: opts.id
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
 
-  # migrate user to another group
-  migrateUser: (accessToken,groupId,userIds,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/members/batchupdate?access_token=#{accessToken}",
-      openid_list: userIds
-      to_groupid: groupId
-    ).on 'complete', (result) ->
-      if result.errmsg != 'ok'
-        log "failed to migrate users to  group #{groupId}",result.errmsg
-        callback result.errmsg
-      else
-        log "migrate users to group #{groupId} successful",result
-        callback null,group
+  attachTag: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?access_token=#{opts.accessToken}",
+      userlist: if typeof opts.users == 'string' then [ opts.users ] else opts.users
+      partylist: opts.departmentIds
+      tagid: opts.tagId
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
 
-  # remove group
-  removeGroup: (accessToken,groupId,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/groups/delete?access_token=#{accessToken}",
-      group: { id: groupId }
-    ).on 'complete', (result) ->
-      if result.errmsg?.length and result.errmsg != 'ok'
-        log "failed to remove group #{groupId}",result.errmsg
-        callback result.errmsg
-      else
-        log "remove group successful",result
-        callback() 
-
-  # set industry
-  setIndustry: (accessToken,industries,callback) ->
-    industrySet = {}
-    industrySet["industry_id#{i + 1}"] = v for v,i in industries
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/template/api_set_industry?access_token=#{accessToken}",
-      industrySet
-    ).on 'complete', (result) ->
-      if result.errcode != 0
-        log "failed to set industry",result.errmsg
-        callback result.errmsg
-      else
-        log "set industries successful",result
-        callback()  
-
-  # get template
-  template: (accessToken,shortId,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/template/api_add_template?access_token=#{accessToken}",
-      template_id_short: shortId 
-    ).on 'complete', (result) ->
-      if result.errcode != 0
-        log "failed to get template",result.errmsg
-        callback result.errmsg
-      else
-        log "get template id  successful",result
-        callback null,result.template_id 
-
-
-  # send template message
-  sendTplMessage: (accessToken,opts,callback) ->
-    data = {}
-    tplConfig = config.wechat.templates[opts.type]
-    template = tplConfig.id
-    aliasConfig = {}
-    if tplConfig.alias
-      aliasConfig[v] = k for k,v of tplConfig.alias
-    for k,v of opts.data
-      if aliasConfig[k] then data[aliasConfig[k]] = {value: v} else data[k] = {value: v}
-    functions = opts.to.map (userId) ->
-      (asyncCallback) ->
-        rest.postJson("https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=#{accessToken}",
-          touser: userId
-          template_id: template
-          data: data
-        ).on 'complete', (result) ->
-          if result.errcode != 0
-            log "failed to send tpl message",result.errmsg
-            asyncCallback result.errmsg
-          else
-            log "get template id  successful",result.msgid
-            asyncCallback null,result.msgid  
-    async.parallel functions,(err,results) ->
-      if err?
-        callback err
-      else
-        callback null,(results.reduce (a,b) -> a.concat b)
+  detachTag: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/tag/deltagusers?access_token=#{opts.accessToken}",
+      userlist: if typeof opts.users == 'string' then [ opts.users ] else opts.users
+      partylist: opts.departmentIds
+      tagid: opts.tagId
+    ).once 'complete', (res) ->
+      if res.errcode == 0 then cb() else cb(res.errmsg)
 
   # create menu
   createMenu: (accessToken,menu,callback) ->
-    rest.postJson("https://api.weixin.qq.com/cgi-bin/menu/create?access_token=#{accessToken}",
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=#{accessToken}&agentid=#{opts.appId}",
       button: menu
     ).on 'complete', (result) ->
       if result.errcode != 0
@@ -383,9 +301,21 @@ define [
         log "create menu  successful",result
         callback()
 
+  usersByTag: (opts,cb) ->
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/tag/get',
+      query:
+        access_token: opts.accessToken
+        tagid: opts.id
+    ).once 'complete', (res) ->
+      if res.errcode == 0
+        list = ({ id: u.userid,name: u.name} for u in res.userlist)
+        cb(null,list)
+      else 
+        cb(res.errmsg)
+
   # clear menu
   removeMenu: (accessToken,callback) ->
-    rest.get("https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=#{accessToken}").on 'complete', (result) ->
+    rest.get("https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=#{accessToken}&agentid=#{opts.appId}").on 'complete', (result) ->
       if result.errcode != 0
         log "failed to clear menu",result.errmsg
         callback result.errmsg
@@ -394,14 +324,18 @@ define [
         callback()
 
   # get menu
-  getMenu: (accessToken,callback) ->
-    rest.get("https://api.weixin.qq.com/cgi-bin/menu/get?access_token=#{accessToken}").on 'complete', (result) ->
-      if result.menu
-        log "get menu  successful",result.menu
-        callback(null,result.menu.button)        
+  getMenu: (opts,callback) ->
+    rest.get("https://qyapi.weixin.qq.com/cgi-bin/menu/get",
+      query:
+        access_token: opts.accessToken
+        agentid: opts.appId
+    ).on 'complete', (result) ->
+      if result.errcode == 0
+        log "get menu  successful",result.button
+        callback(null,result.button)        
       else
         log "failed to get menu",result.errmsg
-        callback 'fail to get menu' 
+        callback(result.errmsg)
 
   render: (view,locals,cb) ->
     file = path.join path.dirname(module.uri),"../views/wechat/#{view}.jade"
