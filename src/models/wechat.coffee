@@ -64,6 +64,49 @@ define [
         log "fetch access token success, it would expire at #{expiredAt.format('HH:mm')}"
         cb null,result.access_token,expiredAt
 
+  # opts:
+  # accessToken 
+  # id(optional)
+  departments: (opts,cb) ->
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/department/list',
+      query: 
+        access_token: opts.accessToken
+        id: opts.id
+    ).once 'complete', (result) ->
+      if result.errcode != 0
+        cb(result.errmsg)
+      else
+        cb(null,result.department)
+
+  createDepartment: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=#{opts.accessToken}",
+      #query:  
+      #  access_token: opts.accessToken
+      #data:
+      name: opts.name
+      parentid: opts.parentId or 1
+    ).once 'complete', (res) ->
+      if res.errcode != 0
+        cb(res.errmsg)
+      else
+        cb(null,{id: res.id})
+
+  updateDepartment: (opts,cb) ->
+    rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/department/update?access_token=#{opts.accessToken}",
+      id: opts.id
+      name: opts.name
+      parentid: opts.parentId
+    ).once 'complete', (err) ->
+      if err.errcode == 0 then cb() else cb(err.errmsg)
+
+  deleteDepartment: (opts,cb) ->
+    rest.get('https://qyapi.weixin.qq.com/cgi-bin/department/delete',
+      query:
+        access_token: opts.accessToken
+        id: opts.id
+    ).once 'complete', (err) ->
+      if err.errcode == 0 then cb() else cb(err.errmsg)
+      
   # get user list
   users: (accessToken,cb) ->
     handler = 

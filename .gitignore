@@ -9,3 +9,4 @@
 /data/*
 /cli
 /x.coffee
+/src/bin/funny.coffee
