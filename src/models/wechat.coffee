@@ -24,7 +24,7 @@ define [
   log = debug 'wechat'
   class WeChat
     constructor: (appId) ->
-      @config = config.getApp appId if appId
+      @config = config.getApp appId
     
     calSignature: (seed) ->
       timestamp = "#{moment().unix()}"
@@ -137,14 +137,14 @@ define [
           cb res.errmsg
   
     # get certain user
-    user: (accessToken,id,callback) ->
+    user: (opts,callback) ->
       rest.get('https://qyapi.weixin.qq.com/cgi-bin/user/get',
         query:
-          access_token: accessToken
-          userid: id
+          access_token: opts.accessToken
+          userid: opts.id
       ).on 'complete', (result) ->
         if result.errcode != 0
-          log "failed to get user[#{id}]",result.errmsg
+          log "failed to get user[#{opts.id}]",result.errmsg
           callback result.errmsg
         else
           log "get user successful",result

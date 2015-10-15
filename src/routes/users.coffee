@@ -22,36 +22,44 @@ define ['async','express','module','debug','models/database','models/wechat','co
         res.locals.accessToken = wechatToken.token
         next()
       else
-        WeChat.fetchAccessToken (err,token,expiredAt) ->
+        chat = new WeChat res.locals.agentId
+        chat.fetchAccessToken (err,token,expiredAt) ->
           database.putJson "wechat:app_#{res.locals.agentId}", { token: token, expiredAt: expiredAt.toJSON() }, (lerr) ->
             res.locals.accessToken = token
             next()
 
   router.get '/', (req, res) ->
     log res.locals
-    res.send 'respond with a resource'
+    res.send 'empty'
 
 
-  router.get '/info', (req,res) ->
+  router.post '/create', (req,res) ->
+    user = req.body
     async.waterfall [
       ((callback) ->
-        if req.query.id?.length then callback() else callback('no user id found')
+        if user.email
+          user.id = user.email.replace /@.*/,''
+          callback() 
+        else 
+          callback('No user email')
       )       
       ((callback) ->
-        refreshToken callback
+        if user.mobile then callback() else callback('No user mobile')
       )    
-    ],(err,token) ->
+    ],(err) ->
       if err
-        log 'failed to fetch token',err
-        res.status(403).json message: 'failed to fetch token'
+        log 'failed to create user',err
+        res.status(403).json message: err
       else
-        log req.query.id.split(',')
-        WeChat.usersInfo token,req.query.id.split(','), (err1,data) ->
+        log "create user: #{user}"
+        user.accessToken = res.locals.accessToken
+        chat = new WeChat(res.locals.agentId)
+        chat.createUser user, (err1,data) ->
           if err1
-            log 'failed to get users info',err1
-            res.status(403).json message: 'failed to get users info'
+            log 'failed to create user',err1
+            res.status(403).json message: err1
           else
-            res.json data
+            res.status(200)
  
   router.post '/alias', (req,res) ->
     data = req.body
@@ -140,20 +148,13 @@ define ['async','express','module','debug','models/database','models/wechat','co
           res.json message: 'ok'
 
   router.get '/:userId', (req,res) ->
-    async.waterfall [
-      ((callback) ->
-        refreshToken callback
-      )    
-    ],(err,token) ->
+    chat = new WeChat res.locals.agentId
+    log req.params
+    chat.user {accessToken: res.locals.accessToken,id: req.params.userId}, (err,user) ->
       if err
-        log 'failed to fetch token',err
-        res.status(403).json message: 'failed to fetch token'
+        log "no such user #{req.params.userId}",err
+        res.status(404).json message: "no such user #{req.params.userId}"
       else
-        WeChat.user token,req.params.userId, (err1,data) ->
-          if err1
-            log 'failed to get user',err1
-            res.status(403).json message: 'failed to get user'
-          else
-            res.json data
+        res.json user      
 
   module.exports = router            
