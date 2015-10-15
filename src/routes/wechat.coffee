@@ -49,10 +49,10 @@ define [
             req.body.xml = msg.xml
             next()
 
-  router.get '/callback', (req,res,next) -> 
+  router.get '/callback', (req,res) -> 
     res.send req.query.echostr
 
-  router.post '/callback',(req,res,next) ->  
+  router.post '/callback',(req,res) ->  
     xmlData = clone(req.body.xml)
     log xmlData
     jsData = {}

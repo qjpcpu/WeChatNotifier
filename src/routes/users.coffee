@@ -1,21 +1,38 @@
 define ['async','express','module','debug','models/database','models/wechat','conf/config'],(async,express,module,debug,database,WeChat,Config) ->
   router = express.Router()
-  debug = debug 'http'
+  log = debug 'http'
 
-  refreshToken = (callback) ->
-    database.getJson 'wechatToken', (err,wechatToken) ->
+  router.use  (req,res,next) ->
+    token = req.query.access_token
+    unless token 
+      log "No access_token found in request"
+      res.status(403).json message: 'no access token found'
+      return
+    database.getJson "credentials:#{token}", (err,val) ->
+      if err
+        log "fetch access token config failed",err
+        res.status(403).json message: 'no valid access token'
+      else
+        res.locals.agentId = val.agentId
+        next()
+
+  router.use (req,res,next) ->
+    database.getJson 'wechat:token', (err,wechatToken) ->
       if wechatToken?.token?.length and moment() < moment(wechatToken?.expiredAt) and (not err?)
-        callback null,wechatToken.token
+        res.locals.accessToken = wechatToken.token
+        next()
       else
         WeChat.fetchAccessToken (err,token,expiredAt) ->
-          database.putJson 'wechatToken', { token: token, expiredAt: expiredAt.toJSON() }
-          callback null,token  
+          database.putJson 'wechat:token', { token: token, expiredAt: expiredAt.toJSON() }, (lerr) ->
+            res.locals.accessToken = token
+            next()
 
-  router.get '/', (req, res, next) ->
+  router.get '/', (req, res) ->
+    log res.locals
     res.send 'respond with a resource'
 
 
-  router.get '/info', (req,res,next) ->
+  router.get '/info', (req,res) ->
     async.waterfall [
       ((callback) ->
         if req.query.id?.length then callback() else callback('no user id found')
@@ -25,18 +42,18 @@ define ['async','express','module','debug','models/database','models/wechat','co
       )    
     ],(err,token) ->
       if err
-        debug 'failed to fetch token',err
+        log 'failed to fetch token',err
         res.status(403).json message: 'failed to fetch token'
       else
-        debug req.query.id.split(',')
+        log req.query.id.split(',')
         WeChat.usersInfo token,req.query.id.split(','), (err1,data) ->
           if err1
-            debug 'failed to get users info',err1
+            log 'failed to get users info',err1
             res.status(403).json message: 'failed to get users info'
           else
             res.json data
  
-  router.post '/alias', (req,res,next) ->
+  router.post '/alias', (req,res) ->
     data = req.body
     return res.status(403).json(message: 'no alias name') unless data.alias
     return res.status(403).json(message: 'no user found') unless data.userId
@@ -46,17 +63,17 @@ define ['async','express','module','debug','models/database','models/wechat','co
       )    
     ],(err,token) ->
       if err
-        debug 'failed to fetch token',err
+        log 'failed to fetch token',err
         res.status(403).json message: 'failed to fetch token'
       else
         WeChat.aliasUser token,{openid: data.userId,remark: data.alias }, (err1) ->
           if err1
-            debug 'failed to alias user',err1
+            log 'failed to alias user',err1
             res.status(403).json message: 'failed to alias user'
           else
             res.send ''
 
-  router.post '/attach_role', (req,res,next) ->
+  router.post '/attach_role', (req,res) ->
     data = req.body
     return res.status(403).json(message: 'no role specified') unless data.role
     return res.status(403).json(message: 'no users found') unless data.users
@@ -67,7 +84,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
       database.putJson "role:#{data.role}", list
       res.json message: 'ok'
 
-  router.post '/detach_role', (req,res,next) ->
+  router.post '/detach_role', (req,res) ->
     data = req.body
     return res.status(403).json(message: 'no role specified') unless data.role
     return res.status(403).json(message: 'no users found') unless data.users
@@ -77,7 +94,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
       database.putJson "role:#{data.role}", result
       res.json message: 'ok'
 
-  router.post '/send_message', (req,res,next) ->
+  router.post '/send_message', (req,res) ->
     data = req.body
     async.series [
       ((callback) ->
@@ -122,19 +139,19 @@ define ['async','express','module','debug','models/database','models/wechat','co
         WeChat.sendTplMessage data.wechatToken,opts,(err,msg) ->
           res.json message: 'ok'
 
-  router.get '/:userId', (req,res,next) ->
+  router.get '/:userId', (req,res) ->
     async.waterfall [
       ((callback) ->
         refreshToken callback
       )    
     ],(err,token) ->
       if err
-        debug 'failed to fetch token',err
+        log 'failed to fetch token',err
         res.status(403).json message: 'failed to fetch token'
       else
         WeChat.user token,req.params.userId, (err1,data) ->
           if err1
-            debug 'failed to get user',err1
+            log 'failed to get user',err1
             res.status(403).json message: 'failed to get user'
           else
             res.json data

@@ -43,11 +43,13 @@ gulp.task 'cli', ['coffee'], (cb) ->
     .on 'end', ->
       del('cli/wcn.js').then -> cb()
   null
-  
+
+gulp.task 'assets', ->
+  gulp.src('src/assets/**/*').pipe gulp.dest('public')
 
 # build all coffee & config files
 gulp.task 'build', (cb) ->
-   runSequence 'clean',['config','coffee'], cb
+   runSequence 'clean',['config','coffee','assets'], cb
 
 # start serve
 gulp.task 'serve', ->

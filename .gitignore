@@ -10,3 +10,4 @@
 /cli
 /x.coffee
 /src/bin/funny.coffee
+.DS_Store

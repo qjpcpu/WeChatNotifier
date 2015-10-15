@@ -2,8 +2,48 @@
 
 requirejs = require '../requirejs'
 
-requirejs ['commander','async','conf/config','models/wechat','prettyjson'], (program,async,config,WeChat,prettyjson) ->
+requirejs ['commander','async','conf/config','models/wechat','prettyjson','models/database','node-uuid'], (program,async,config,WeChat,prettyjson,database,uuid) ->
   program.version('0.0.1')
+  program.command 'token <action> [appId] [desc]'
+    .description 'credentials'
+    .action  (act,appId,desc) ->
+      database.connect()
+      switch act
+        when 'list'
+          database.jsonRecords ((list) ->
+            data = []
+            for cls in list #when /^credentials:/.test cls.key
+              cls.key = cls.key.replace(/^credentials:/,'')
+              data.push cls
+            console.log prettyjson.render(data)
+            process.exit(0)
+          ), { prefix: 'credentials:'}
+        when 'create'
+          unless appId
+            console.error 'no appId found'
+            console.error 'Usage: wcn token create appId name'
+            process.exit 1
+          unless desc
+            console.error 'no name'
+            console.error 'Usage: wcn token create appId name'
+            process.exit 1
+
+          key = (new Buffer(uuid.v1())).toString('base64')
+          value = { agentId: appId,name: desc }
+          database.putJson "dredentials:#{key}",value,(list) -> 
+            console.log "Create record:"
+            console.log prettyjson.render({key: key,value: value})
+            process.exit(0)
+        when 'del'
+          unless appId
+            console.error "no key found"
+            process.exit 1
+          key = appId
+          database.del "credentials:#{key}",(err) ->
+            if err then console.error "删除失败" else console.log 'OK!'
+            process.exit 0
+
+
   program.command 'menu <action>'
     .description 'build menu'
     .action  (act) ->
