@@ -28,7 +28,8 @@ define [
     if (not req.query.echostr?) and (not req.body.xml?)
       res.status(403).json(message: 'invalid request')
       return
-    validReq = WeChat.validateUrl
+    chat = new WeChat(req.body.xml?.AgentID or config.wechat.apps[0].id)
+    validReq = chat.validateUrl
       timestamp: req.query.timestamp
       nonce: req.query.nonce
       signature: req.query.msg_signature
@@ -37,10 +38,10 @@ define [
       res.status(403).json(message: 'invalid wechat source server')
     else
       if req.query.echostr
-        req.query.echostr = WeChat.decrypt req.query.echostr
+        req.query.echostr = chat.decrypt req.query.echostr
         next()
       else
-        decryptMsg = WeChat.decrypt req.body.xml.Encrypt
+        decryptMsg = chat.decrypt req.body.xml.Encrypt
         xml2js.parseString decryptMsg,{explicitArray : false}, (err,msg) ->
           if err
             log decryptMsg,err
@@ -74,7 +75,8 @@ define [
         response.toUser = xmlData.FromUserName
         response.fromUser = xmlData.ToUserName
         response.time = xmlData.CreateTime
-        WeChat.render response.msgType,response,(err,xmlStr) ->
-          res.render "wechat/wrap", WeChat.encrypt(xmlStr)
+        chat = new WeChat(jsData.agentId)
+        chat.render response.msgType,response,(err,xmlStr) ->
+          res.render "wechat/wrap", chat.encrypt(xmlStr)
 
   module.exports = router

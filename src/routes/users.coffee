@@ -17,13 +17,13 @@ define ['async','express','module','debug','models/database','models/wechat','co
         next()
 
   router.use (req,res,next) ->
-    database.getJson 'wechat:token', (err,wechatToken) ->
+    database.getJson "wechat:app_#{res.locals.agentId}", (err,wechatToken) ->
       if wechatToken?.token?.length and moment() < moment(wechatToken?.expiredAt) and (not err?)
         res.locals.accessToken = wechatToken.token
         next()
       else
         WeChat.fetchAccessToken (err,token,expiredAt) ->
-          database.putJson 'wechat:token', { token: token, expiredAt: expiredAt.toJSON() }, (lerr) ->
+          database.putJson "wechat:app_#{res.locals.agentId}", { token: token, expiredAt: expiredAt.toJSON() }, (lerr) ->
             res.locals.accessToken = token
             next()
 

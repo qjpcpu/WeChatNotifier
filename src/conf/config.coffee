@@ -6,5 +6,8 @@ define ['module','change-case','cson','path','debug'], (module,Cc,Cson,path,debu
     conf.db = 
       path: dbFile
       port: 9346
+  conf.getApp = (appId) ->
+    (app for app in conf.wechat.apps when app.id == parseInt(appId))[0]
+    
   log 'get conf',conf
   conf

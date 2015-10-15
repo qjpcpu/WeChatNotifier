@@ -1,20 +1,24 @@
 wechat:
-  token: ''
-  encodingAesKey: ''
-  corpId: ''
-  corpSecret: ''
-  events:                # optional
-    subscribe:
-      type: 'callback'
-    unsubscribe: 
-      type: 'text'
-      words: 'byebye'
-  messages: [             # optional
-    {
-      match: '.*'
-      type: 'callback'    # or tuling or text
-    }
+  apps: [
+    id: 4
+    token: ''
+    encodingAesKey: ''
+    corpId: ''
+    corpSecret: ''
+    events:                # optional
+      subscribe:
+        type: 'callback'
+      unsubscribe: 
+        type: 'text'
+        words: 'byebye'
+    messages: [             # optional
+      {
+        match: '.*'
+        type: 'callback'    # or tuling or text
+      }
+    ]  
   ]
+
   menu: [                # optional
     {
       'type': 'click'
@@ -38,11 +42,6 @@ wechat:
     }
   ]    
 
-callback:
-  url: 'http://abc.com/callback'
-  eventUrl: 'http://abc.com/callback1'  # callback must contain either eventUrl or url
-  messageUrl: 'http://abc.com/callback2' # callback must contain either messageUrl or url
-  token: 'another-token'  # optional
 tuling:
   key: ''
   url: 'http://www.tuling123.com/openapi/api' 

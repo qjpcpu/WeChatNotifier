@@ -16,22 +16,21 @@ define [
   log = debug 'wechat-router'
   class WeChatMsgRouter
     handle: (entity,cb) ->
+      wechatConfig = Config.getApp(entity.agentId)
+      unless wechatConfig
+        log 'no wechat app found'
+        return cb(null,'')
       async.waterfall [
         ((callback) ->
-          if Config.wechat.messages?.length > 0
-            cfg = null
-            for c in Config.wechat.messages
+          if wechatConfig.messages?.length > 0
+            for c in wechatConfig.messages
               if c.match? and (new RegExp(c.match)).test entity.content
-                cfg = c
-                callback null,cfg
-                break
+                return callback(null,c)
               else if c.equals? and c.equals == entity.content
-                cfg = c
-                callback null,cfg
-                break
-            callback(null,{type: 'callback'}) unless cfg
+                return callback(null,c)
+            callback 'no messages handler matched'
           else
-            callback null,{type: 'callback'}
+            callback 'no messages handler'
         )
       ], (err,cfg) ->
         if err
@@ -44,10 +43,9 @@ define [
             when 'tuling'
               Tuling.ask entity.fromUser,entity.content, (result) -> cb(null,result)
             else # 'callback'
-              url = Config.callback.messageUrl or  Config.callback.url
-              return cb('no callback found')  unless url
-              if Config.callback.token?.length > 0
-                sig = WeChat.calSignature Config.callback.token
+              url = cfg.url
+              if cfg.token?.length > 0
+                sig = (new WeChat(entity.agentId)).calSignature cfg.token
                 url = "#{url}?timestamp=#{sig.timestamp}&nonce=#{sig.nonce}&signature=#{sig.signature}"
         
               rest.postJson(url,

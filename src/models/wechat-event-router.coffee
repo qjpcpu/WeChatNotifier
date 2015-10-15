@@ -15,18 +15,20 @@ define [
   class WeChatEventRouter
     handle: (entity,cb) ->
       evt = Cc.lowerCase entity.event
-      events = Config.wechat.events
+      wechatConfig = Config.getApp(entity.agentId)
+      events = wechatConfig.events
       unless events[evt]
         log 'Swallow event', entity
         return cb(null,'')
       return cb("no such event handler: #{events[evt].type}") unless events[evt].type in ['text','callback']
       return cb(null,events[evt].words or '') if events[evt].type == 'text'
-      return cb('no callback url') unless Config.callback?.url
+      return cb('no callback url') unless events[evt].url
 
-      url = Config.callback.eventUrl or Config.callback.url
-      return cb('no callback found')  unless url
-      if Config.callback.token?.length > 0
-        sig = WeChat.calSignature Config.callback.token
+      url = events[evt].url
+
+      if events[evt].token?.length > 0
+        chat = new WeChat(entity.agentId)
+        sig = chat.calSignature events[evt].token
         url = "#{url}?timestamp=#{sig.timestamp}&nonce=#{sig.nonce}&signature=#{sig.signature}"
 
       rest.postJson(url,
