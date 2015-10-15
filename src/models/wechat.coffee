@@ -34,14 +34,14 @@ define [
   
     # validate query parameters: nonce & timestamp & signature
     validateUrl: (params) ->
-      wc = this
+      wc = this.config
       signature = sha1 [wc.token,params.timestamp,params.nonce,params.message].sort().join('')
       return true if signature == params.signature
       log 'validate WeChat source failed, source query parameters is:', params
       false
   
     encrypt: (message) ->
-      wc = this
+      wc = this.config
       cryptor = new WXBizMsgCrypt(wc.token, wc.encodingAesKey, wc.corpId)
       message = cryptor.encrypt(message)
       timestamp = "#{moment().unix()}"
@@ -50,13 +50,13 @@ define [
       { message: message, timestamp: timestamp, nonce: nonce, signature: signature}    
   
     decrypt: (message) ->
-      wc = this
+      wc = this.config
       cryptor = new WXBizMsgCrypt(wc.token, wc.encodingAesKey, wc.corpId)
       cryptor.decrypt(message).message
   
     # fetch access token
     fetchAccessToken: (cb) ->
-      wc = this
+      wc = this.config
       rest.get('https://qyapi.weixin.qq.com/cgi-bin/gettoken',
         query:
           corpid: wc.corpId
