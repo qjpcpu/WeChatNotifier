@@ -80,9 +80,6 @@ define [
 
   createDepartment: (opts,cb) ->
     rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/department/create?access_token=#{opts.accessToken}",
-      #query:  
-      #  access_token: opts.accessToken
-      #data:
       name: opts.name
       parentid: opts.parentId or 1
     ).once 'complete', (res) ->
