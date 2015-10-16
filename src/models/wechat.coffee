@@ -127,7 +127,7 @@ define [
       rest.get(url,
         query:
           access_token: opts.accessToken
-          department_id: opts.id or 1
+          department_id: opts.departmentId or 1
           fetch_child: (if opts.recursive then 1 else 0)
           status: tag
       ).once 'complete', (res) ->
@@ -154,7 +154,7 @@ define [
       switch opts.sex
         when 'male' then opts.sex = 1
         when 'female' then opts.sex = 2
-        else opts.sex = undefined
+
       rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/user/create?access_token=#{opts.accessToken}",
         userid: opts.id
         name: opts.name or opts.id
@@ -208,7 +208,7 @@ define [
       opts = 
         touser: if typeof msg.users == 'object' then msg.users.join('|') else msg.users
         toparty: if typeof msg.departmentIds == 'object' then msg.departmentIds.join('|') else msg.departmentIds
-        totag: if typeof msg.tags == 'object' then msg.tags.join('|') else msg.tags
+        totag: if typeof msg.tagIds == 'object' then msg.tagIds.join('|') else msg.tagIds
         msgtype: msg.type or 'text'
         agentid: msg.appId
         safe: if msg.encrypt then 1 else 0

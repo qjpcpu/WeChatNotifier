@@ -10,6 +10,8 @@ define [
     'body-parser'
     'routes/index'
     'routes/users'
+    'routes/roles'
+    'routes/departments'
     'routes/wechat'
   ], (
     module
@@ -23,6 +25,8 @@ define [
     bodyParser
     routes
     users
+    roles
+    departments
     wechat
 ) ->
   app = express()
@@ -51,6 +55,8 @@ define [
   app.use express.static(path.join(path.dirname(), 'public'))
   app.use '/', routes
   app.use '/users', users
+  app.use '/roles', roles
+  app.use '/departments', departments
   app.use '/wechat',wechat
   
   # catch 404 and forward to error handler

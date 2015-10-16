@@ -12,7 +12,7 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
         when 'list'
           database.jsonRecords ((list) ->
             data = []
-            for cls in list #when /^credentials:/.test cls.key
+            for cls in list
               cls.key = cls.key.replace(/^credentials:/,'')
               data.push cls
             console.log prettyjson.render(data)
@@ -30,7 +30,7 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
 
           key = (new Buffer(uuid.v1())).toString('base64')
           value = { agentId: appId,name: desc }
-          database.putJson "dredentials:#{key}",value,(list) -> 
+          database.putJson "credentials:#{key}",value,(list) -> 
             console.log "Create record:"
             console.log prettyjson.render({key: key,value: value})
             process.exit(0)
