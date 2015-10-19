@@ -310,9 +310,9 @@ define [
         if res.errcode == 0 then cb() else cb(res.errmsg)
   
     # create menu
-    createMenu: (accessToken,menu,callback) ->
-      rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=#{accessToken}&agentid=#{opts.appId}",
-        button: menu
+    createMenu: (opts,callback) ->
+      rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/menu/create?access_token=#{opts.accessToken}&agentid=#{opts.appId}",
+        button: opts.menu
       ).on 'complete', (result) ->
         if result.errcode != 0
           log "failed to create menu",result.errmsg
@@ -334,8 +334,8 @@ define [
           cb(res.errmsg)
   
     # clear menu
-    removeMenu: (accessToken,callback) ->
-      rest.get("https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=#{accessToken}&agentid=#{opts.appId}").on 'complete', (result) ->
+    removeMenu: (opts,callback) ->
+      rest.get("https://qyapi.weixin.qq.com/cgi-bin/menu/delete?access_token=#{opts.accessToken}&agentid=#{opts.appId}").on 'complete', (result) ->
         if result.errcode != 0
           log "failed to clear menu",result.errmsg
           callback result.errmsg
@@ -350,9 +350,9 @@ define [
           access_token: opts.accessToken
           agentid: opts.appId
       ).on 'complete', (result) ->
-        if result.errcode == 0
-          log "get menu  successful",result.button
-          callback(null,result.button)        
+        if result.menu?.button?
+          log "get menu  successful",result.menu.button
+          callback(null,result.menu.button)        
         else
           log "failed to get menu",result.errmsg
           callback(result.errmsg)

@@ -17,30 +17,7 @@ wechat:
         type: 'callback'    # or tuling or text
       }
     ]  
-  ]
-
-  menu: [                # optional
-    {
-      'type': 'click'
-      'name': '主菜单1'
-      'key': 'level1_menu'
-    }
-    {
-      'name': '主菜单2'
-      'sub_button': [
-        {
-          'type': 'view'
-          'name': '百度一下'
-          'url': 'http://www.baidu.com/'
-        }
-        {
-          'type': 'click'
-          'name': '赞一下我'
-          'key': 'star_menu'
-        }
-      ]
-    }
-  ]    
+  ]   
 
 tuling:
   key: ''
