@@ -26,9 +26,9 @@ define [
 
       url = events[evt].url
 
-      if events[evt].token?.length > 0
+      if wechatConfig.callbackToken?.length > 0
         chat = new WeChat(entity.agentId)
-        sig = chat.calSignature events[evt].token
+        sig = chat.calSignature wechatConfig.callbackToken
         url = "#{url}?timestamp=#{sig.timestamp}&nonce=#{sig.nonce}&signature=#{sig.signature}"
 
       rest.postJson(url,

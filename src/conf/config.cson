@@ -2,6 +2,7 @@ wechat:
   apps: [
     id: 4
     token: ''
+    # callbackToken: ''
     encodingAesKey: ''
     corpId: ''
     corpSecret: ''
