@@ -213,25 +213,33 @@ define [
         agentid: msg.appId
         safe: if msg.encrypt then 1 else 0
       switch opts.msgtype
-        when 'text' then opts[opts.msgtype] = { content: msg.body }
-        when 'image','voice','file' then opts[opts.msgtype] = { media_id: msg.body.mediaId }
+        when 'text'
+          throw 'text message body must be string' unless typeof msg.body == 'string'
+          opts[opts.msgtype] = { content: msg.body }
+        when 'image','voice','file'
+          throw 'message body must be hash object' unless typeof msg.body == 'object'
+          throw 'no mediaId found in messge body' unless msg.body.mediaId
+          opts[opts.msgtype] = { media_id: msg.body.mediaId }
         when 'video'
+          throw 'message body must be hash object' unless typeof msg.body == 'object'
+          throw 'no mediaId found in messge body' unless msg.body.mediaId
+          throw 'no title found in video message body' unless msg.body.title
           opts[opts.msgtype] = 
             media_id: msg.body.mediaId
             title: msg.body.title
             description: msg.body.description
         when 'news'
-          if msg.body instanceof Array
-            posts = []
-            for a,i in msg.body when i < 10
-              posts.push
-                title: a.title
-                description: a.description
-                url: a.url
-                picurl: a.picUrl
-            opts[opts.msgtype] = articles: posts
-          else
-            opts[opts.msgtype] = articles: []
+          throw 'news message body must be array' unless msg.body instanceof Array
+          posts = []
+          for a,i in msg.body when i < 10
+            throw "every news must have a title" unless a.title
+            posts.push
+              title: a.title
+              description: a.description
+              url: a.url
+              picurl: a.picUrl
+          opts[opts.msgtype] = articles: posts
+
       opts
     
     # opts:
@@ -241,8 +249,14 @@ define [
     # body(object/Array/string)
     sendMessage: (opts,cb) ->
       wc = this
+      msgBody = {}
+      try
+        msgBody = wc.formatMessage opts
+      catch err
+        log "message parameters invalid",err
+        return cb(err)
       rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=#{opts.accessToken}",
-        wc.formatMessage(opts)
+        msgBody
       ).once 'complete', (res) ->
         log "send message response: #{res}"
         if res.errcode == 0 then cb() else cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
