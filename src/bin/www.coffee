@@ -9,7 +9,7 @@ requirejs ['debug','http','app','cluster','os','models/database'], (debug,http,a
     return port if port >= 0
     false
   
-  port = normalizePort(process.env.PORT or '8000')
+  port = normalizePort(process.env.PORT or '8002')
   
   onError = (error) ->
     if error.syscall != 'listen'
