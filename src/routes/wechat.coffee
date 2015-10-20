@@ -25,8 +25,11 @@ define [
   log = debug('http')
   
   router.use '/callback',xmlparser({trim: false,normalize: false,normalizeTags: false, explicitArray: false}), (req,res,next) ->
-    if (not req.query.echostr?) and (not req.body.xml?)
-      res.status(403).json(message: 'invalid request')
+    if (not req.query.echostr?) and (not req.body.xml?.Encrypt?)
+      res.status(403).json(message: 'invalid request, lost body')
+      return
+    if (not req.query.timestamp?) or (not req.query.nonce?) or (not req.query.msg_signature?)
+      res.status(403).json message: 'invalid request from unkown source'
       return
     chat = new WeChat(req.body.xml?.AgentID or config.wechat.apps[0].id)
     validReq = chat.validateUrl
@@ -35,7 +38,7 @@ define [
       signature: req.query.msg_signature
       message: req.query.echostr or req.body.xml.Encrypt
     unless validReq
-      res.status(403).json(message: 'invalid wechat source server')
+      res.status(403).json(message: 'invalid callback request from unkown source')
     else
       if req.query.echostr
         req.query.echostr = chat.decrypt req.query.echostr
