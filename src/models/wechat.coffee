@@ -251,6 +251,7 @@ define [
       wc = this
       msgBody = {}
       try
+        log "sending message",opts
         msgBody = wc.formatMessage opts
       catch err
         log "message parameters invalid",err
@@ -258,8 +259,12 @@ define [
       rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=#{opts.accessToken}",
         msgBody
       ).once 'complete', (res) ->
-        log "send message response",res
-        if res.errcode == 0 then cb() else cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
+        if res.errcode == 0
+          log "send message ok"
+          cb() 
+        else
+          log "failed to send message",(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
+          cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
   
     tags: (opts,cb) ->
       rest.get("https://qyapi.weixin.qq.com/cgi-bin/tag/list?access_token=#{opts.accessToken}").once 'complete', (res) ->
