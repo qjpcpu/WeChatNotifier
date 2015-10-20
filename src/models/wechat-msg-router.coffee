@@ -47,7 +47,8 @@ define [
               if wechatConfig.callbackToken?.length > 0
                 sig = (new WeChat(entity.agentId)).calSignature wechatConfig.callbackToken
                 url = "#{url}?timestamp=#{sig.timestamp}&nonce=#{sig.nonce}&signature=#{sig.signature}"
-        
+
+              log "forword message to #{url}",entity
               rest.postJson(url,
                 entity
                 { timeout: 4000 }
