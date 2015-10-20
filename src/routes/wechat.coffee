@@ -48,7 +48,7 @@ define [
         xml2js.parseString decryptMsg,{explicitArray : false}, (err,msg) ->
           if err
             log decryptMsg,err
-            res.status(200)
+            res.json message: 'ok'
           else
             req.body.xml = msg.xml
             next()
@@ -66,7 +66,7 @@ define [
     (new WeChatRouter()).handle jsData,(err,data) ->
       if err
         log "error happens when handle #{req.body.xml}\nerr was: #{err}"
-        res.status(500)
+        res.status(500).json message: "error happens when handle #{req.body.xml}\nerr was: #{err}"
       else
         response = {}
         if typeof data == 'object'
