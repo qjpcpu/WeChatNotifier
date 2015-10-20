@@ -258,7 +258,7 @@ define [
       rest.postJson("https://qyapi.weixin.qq.com/cgi-bin/message/send?access_token=#{opts.accessToken}",
         msgBody
       ).once 'complete', (res) ->
-        log "send message response: #{res}"
+        log "send message response",res
         if res.errcode == 0 then cb() else cb(res.invaliduser or res.invalidparty or res.invalidtag or res.errmsg)
   
     tags: (opts,cb) ->
