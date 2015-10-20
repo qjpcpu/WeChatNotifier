@@ -11,7 +11,7 @@ define [
   multilevel
   net
 ) ->
-  log = debug 'wechatnotifier:db'
+  log = debug 'wcn:db'
   database = {}
   startServe: ->
     database.db = level config.db.path

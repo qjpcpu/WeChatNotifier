@@ -13,7 +13,7 @@ define [
   async
   Tuling
 ) ->
-  log = debug 'wechat-router'
+  log = debug 'wcn:wechat-router'
   class WeChatMsgRouter
     handle: (entity,cb) ->
       wechatConfig = Config.getApp(entity.agentId)

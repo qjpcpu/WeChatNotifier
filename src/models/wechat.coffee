@@ -21,7 +21,7 @@ define [
   path
   jade
 ) ->
-  log = debug 'wechat'
+  log = debug 'wcn:wechat'
   class WeChat
     constructor: (appId) ->
       @config = config.getApp appId

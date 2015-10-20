@@ -1,7 +1,7 @@
 requirejs = require('../requirejs')
 
 requirejs ['debug','http','app','cluster','os','models/database'], (debug,http,app,cluster,os,database) ->
-  log = debug('wechatnotifier:server')
+  log = debug('wcn:server')
 
   normalizePort = (val) ->
     port = parseInt(val, 10)

@@ -11,7 +11,7 @@ define [
   Config
   WeChat
 ) ->
-  log = debug 'wechat-router'
+  log = debug 'wcn:wechat-router'
   class WeChatEventRouter
     handle: (entity,cb) ->
       evt = Cc.lowerCase entity.event

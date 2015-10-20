@@ -66,7 +66,15 @@ define [
     (new WeChatRouter()).handle jsData,(err,data) ->
       if err
         log "error happens when handle #{req.body.xml}\nerr was: #{err}"
-        res.status(500).json message: "error happens when handle #{req.body.xml}\nerr was: #{err}"
+        response = 
+          toUser: xmlData.FromUserName
+          fromUser: xmlData.ToUserName
+          time: "#{moment().unix()}"
+          msgType: 'text'
+          content: "oops! error happens"
+        chat = new WeChat(jsData.agentId)
+        chat.render response.msgType,response,(err,xmlStr) ->
+          res.render "wechat/wrap", chat.encrypt(xmlStr)        
       else
         response = {}
         if typeof data == 'object'
@@ -77,7 +85,7 @@ define [
 
         response.toUser = xmlData.FromUserName
         response.fromUser = xmlData.ToUserName
-        response.time = xmlData.CreateTime
+        response.time = "#{moment().unix()}"
         chat = new WeChat(jsData.agentId)
         chat.render response.msgType,response,(err,xmlStr) ->
           res.render "wechat/wrap", chat.encrypt(xmlStr)
