@@ -25,6 +25,34 @@ define [
   class WeChat
     constructor: (appId) ->
       @config = config.getApp appId
+
+    authRules: ->
+      {
+        manager: 
+          read: [ 'department','user','tag','message','token','menu' ]
+          write: [ 'department','user','tag','message','token' ]
+        notifier:
+          read: [ 'department','user','tag','message','token','menu' ]
+          write: [ 'message' ]
+        complexNotifier:
+          read: [ 'department','user','tag','message','token','menu' ]
+          write: [ 'message','tag' ]        
+        viewer:
+          read: [ 'department','user','tag','message','token','menu' ]
+          write: []
+      }
+
+    canRead: (resource,role) ->
+      return false unless role
+      rules = this.authRules()
+      return false unless rules[role]
+      resource in rules[role].read
+
+    canWrite: (resource,role) ->
+      return false unless role
+      rules = this.authRules()
+      return false unless rules[role]
+      resource in rules[role].write      
     
     calSignature: (seed) ->
       timestamp = "#{moment().unix()}"

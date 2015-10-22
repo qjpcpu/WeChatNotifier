@@ -29,7 +29,7 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
             process.exit 1
 
           key = (new Buffer(uuid.v1())).toString('base64')
-          value = { agentId: appId,name: desc }
+          value = { id: uuid.v1(),agentId: appId,name: desc, role: 'notifier' }
           database.putJson "credentials:#{key}",value,(list) -> 
             console.log "Create record:"
             console.log prettyjson.render({key: key,value: value})
