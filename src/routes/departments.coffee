@@ -30,7 +30,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/', (req, res) ->
     chat = new WeChat res.locals.agentId
-    chat.departments {accessToken: res.locals.accessToken,id: req.query.parentId },(err,list) ->
+    chat.departments {accessToken: res.locals.accessToken,id: req.query.id },(err,list) ->
       if err
         log "failed to get departments",err
         res.json  []
@@ -43,12 +43,12 @@ define ['async','express','module','debug','models/database','models/wechat','co
       res.status(403).json message: 'no department name'
       return
     chat = new WeChat res.locals.agentId
-    chat.createDepartment {accessToken: res.locals.accessToken,parentId: req.body.parentId,name: req.body.name },(err) ->
+    chat.createDepartment {accessToken: res.locals.accessToken,parentId: req.body.parentId,name: req.body.name },(err,dp) ->
       if err
         log "failed to create department",err
         res.status(403).json message: err
       else
-        res.json message: 'OK'        
+        res.json dp       
 
   router.put '/:id', (req, res) ->
     chat = new WeChat res.locals.agentId
