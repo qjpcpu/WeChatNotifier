@@ -42,9 +42,10 @@ define [
     logDirectory = path.dirname() + '/logs'
     fs.existsSync(logDirectory) || fs.mkdirSync(logDirectory)
     accessLogStream = FileStreamRotator.getStream
-      filename: logDirectory + '/access-%DATE%.log',
-      frequency: 'daily',
+      filename: logDirectory + '/access-%DATE%.log'
+      frequency: 'daily'
       verbose: false
+      date_format: "YYYY-MM-DD"
     app.use logger('combined', {stream: accessLogStream})
   else
     app.use logger 'dev'
