@@ -9,13 +9,27 @@ wechat:
     events:                # optional
       subscribe:
         type: 'callback'
+        url: 'https://127.0.0.1:8000/event-callback'
       unsubscribe: 
         type: 'text'
         words: 'byebye'
+      scancode_waitmsg:    # not display qrcode content on client page
+        type: 'text'
+        words: 'sanned some info'
+      scancode_push:       # display qrcode content on client page
+        type: 'text'
+        words: 'sanned some info'   
+      enter_agent:
+        type: 'text'     
+        words: 'user enter app'
+      click:
+        type: 'callback'
+        url: 'https://127.0.0.1:8001/click-callback'        
     messages: [             # optional
       {
         match: '.*'
         type: 'callback'    # or tuling or text
+        url: 'https://127.0.0.1:8000/message-callback'
       }
     ]  
   ]   
