@@ -56,10 +56,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
           callback() 
         else 
           callback('No user email')
-      )       
-      ((callback) ->
-        if user.mobile then callback() else callback('No user mobile')
-      )    
+      )   
     ],(err) ->
       if err
         log 'failed to create user',err
