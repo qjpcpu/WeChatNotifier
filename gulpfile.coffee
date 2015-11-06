@@ -49,7 +49,7 @@ gulp.task 'assets', ->
 
 # build all coffee & config files
 gulp.task 'build', (cb) ->
-   runSequence 'clean',['config','coffee','assets'], cb
+   runSequence 'clean',['config','cli','coffee','assets'], cb
 
 # start serve
 gulp.task 'serve', ->

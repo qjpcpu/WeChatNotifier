@@ -2,9 +2,9 @@
 
 requirejs = require '../requirejs'
 
-requirejs ['commander','async','conf/config','models/wechat','prettyjson','models/database','node-uuid'], (program,async,config,WeChat,prettyjson,database,uuid) ->
+requirejs ['commander','async','conf/config','models/wechat','prettyjson','models/database','node-uuid','inquirer'], (program,async,config,WeChat,prettyjson,database,uuid,inquirer) ->
   program.version('0.0.1')
-  program.command 'token <action> [appId] [desc]'
+  program.command 'token <action>'
     .description 'credentials'
     .action  (act,appId,desc) ->
       database.connect()
@@ -19,30 +19,104 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
             process.exit(0)
           ), { prefix: 'credentials:'}
         when 'create'
-          unless appId
-            console.error 'no appId found'
-            console.error 'Usage: wcn token create appId name'
-            process.exit 1
-          unless desc
-            console.error 'no name'
-            console.error 'Usage: wcn token create appId name'
-            process.exit 1
-
-          key = (new Buffer(uuid.v1())).toString('base64')
-          value = { id: uuid.v1(),agentId: appId,name: desc, role: 'notifier' }
-          database.putJson "credentials:#{key}",value,(list) -> 
-            console.log "Create record:"
-            console.log prettyjson.render({key: key,value: value})
-            process.exit(0)
+          questions = [
+            {
+              type: 'list'
+              name: 'agentId'
+              message: "请选择使用的agentId:\n"
+              choices: (ans) -> ("#{app.id}" for app in config.wechat.apps)
+            }
+            {
+              type: 'input'
+              name: 'name'
+              message: "请输入接入微信的客户端名称:\n"
+              validate: (term) -> if term?.length > 0 then true else "非法名称"
+            }
+            {
+              type: 'list'
+              name: 'role'
+              message: "请选择权限类型:\n"
+              choices: [
+                { name: '(标准)允许发送消息,查看用户信息[适用于大部分情况]',value: 'notifier' }
+                { name: '(浏览)仅能查看信息',value: 'viewer' }
+                { name: '(管理员)完全权限',value: 'manager' }
+                { name: '(高级发送)查看全部信息，发送消息，修改标签',value: 'complexNotifier' }
+              ]
+            }
+          ]
+          inquirer.prompt questions, (value) ->
+            key = (new Buffer(uuid.v1())).toString('base64')
+            value.id = uuid.v1()
+            database.putJson "credentials:#{key}",value,(list) -> 
+              console.log "创建token成功,信息如下:"
+              console.log prettyjson.render({key: key,value: value})
+              process.exit(0)
         when 'del'
-          unless appId
-            console.error "no key found"
-            process.exit 1
-          key = appId
-          database.del "credentials:#{key}",(err) ->
-            if err then console.error "删除失败" else console.log 'OK!'
-            process.exit 0
-
+          database.jsonRecords ((list) ->
+            data = []
+            for cls in list
+              data.push { name: "#{cls.value.name}: #{cls.key.replace(/^credentials:/,'')}",value: cls.key }         
+            questions = [
+              {
+                type: 'list'
+                name: 'key'
+                message: "请选择需要删除的token:\n"
+                choices: data            
+              }
+            ]
+            inquirer.prompt questions, (answer) ->
+              database.del answer.key,(err) ->
+                if err then console.error "删除失败" else console.log 'OK!'
+                process.exit 0
+          ), { prefix: 'credentials:'}
+        when 'update'
+          database.jsonRecords ((list) ->
+            questions = [
+              {
+                type: 'list'
+                name: 'key'
+                message: "请选择需要更新的token:\n"
+                choices: (se) ->
+                  data = []
+                  for cls in list
+                    data.push { name: "#{cls.value.name}: #{cls.key.replace(/^credentials:/,'')}",value: cls.key }
+                  data                  
+              }
+              {
+                type: 'list'
+                name: 'role'
+                message: "请选择权限类型:\n"
+                choices: [
+                  { name: '(标准)允许发送消息,查看用户信息[适用于大部分情况]',value: 'notifier' }
+                  { name: '(浏览)仅能查看信息',value: 'viewer' }
+                  { name: '(管理员)完全权限',value: 'manager' }
+                  { name: '(高级发送)查看全部信息，发送消息，修改标签',value: 'complexNotifier' }
+                ]
+              }  
+              {
+                type: 'input'
+                name: 'name'
+                message: "请输入接入微信的客户端名称:\n"
+                validate: (term) -> if term?.length > 0 then true else "非法名称"
+              }                          
+            ]
+            inquirer.prompt questions, (answer) ->
+              database.getJson answer.key, (err,value) ->
+                key = (new Buffer(uuid.v1())).toString('base64')
+                value.name = answer.name
+                value.role = answer.role
+                arr = [
+                  { type: 'del',key: answer.key }
+                  { type: 'put',key: "credentials:#{key}",value: value,valueEncoding: 'json' }
+                ]
+                database.batch arr, (err) ->
+                  unless err
+                    console.log 'Update token OK'
+                    console.log prettyjson.render({key: key,value: value})
+                  else
+                    console.log 'Update token failed'
+                  process.exit 0
+          ), { prefix: 'credentials:'}
 
   program.command 'menu <action>'
     .description 'build menu'
