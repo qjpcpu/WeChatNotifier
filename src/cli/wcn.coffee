@@ -15,7 +15,10 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
             for cls in list
               cls.key = cls.key.replace(/^credentials:/,'')
               data.push cls
-            console.log prettyjson.render(data)
+            if data.length > 0
+              console.log prettyjson.render(data)
+            else
+              console.log 'No tokens found!'
             process.exit(0)
           ), { prefix: 'credentials:'}
         when 'create'
