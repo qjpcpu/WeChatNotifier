@@ -14,6 +14,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
         res.status(403).json message: 'no valid access token'
       else
         res.locals.agentId = val.agentId
+        res.locals.role = val.role
         next()
 
   router.use (req,res,next) ->
@@ -30,6 +31,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('department',res.locals.role)
     chat.departments {accessToken: res.locals.accessToken,id: req.query.id },(err,list) ->
       if err
         log "failed to get departments",err
@@ -43,6 +45,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
       res.status(403).json message: 'no department name'
       return
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('department',res.locals.role)    
     chat.createDepartment {accessToken: res.locals.accessToken,parentId: req.body.parentId,name: req.body.name },(err,dp) ->
       if err
         log "failed to create department",err
@@ -52,6 +55,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.put '/:id', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('department',res.locals.role)    
     chat.updateDepartment {accessToken: res.locals.accessToken,id: req.params.id,parentId: req.body.parentId,name: req.body.name },(err) ->
       if err
         log "failed to update department",err
@@ -61,6 +65,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.delete '/:id', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('department',res.locals.role)    
     chat.deleteDepartment {accessToken: res.locals.accessToken,id: req.params.id },(err) ->
       if err
         log "failed to del department",err
@@ -70,6 +75,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/:id/users', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('department',res.locals.role)    
     chat.users {accessToken: res.locals.accessToken,recursive: (req.query.recursive in [undefined,'yes','true']),departmentId: req.params.id },(err,list) ->
       if err
         log "failed to get department users",err
@@ -79,6 +85,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.delete '/:id/:userId', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('department',res.locals.role)    
     chat.user { accessToken: res.locals.accessToken,id: req.params.userId }, (err,user) ->
       if err
         log 'failed to get user',err
@@ -95,6 +102,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.post '/:id/:userId', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('department',res.locals.role)    
     chat.user { accessToken: res.locals.accessToken,id: req.params.userId }, (err,user) ->
       if err
         log 'failed to get user',err
