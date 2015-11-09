@@ -257,7 +257,8 @@ define [
             title: msg.body.title
             description: msg.body.description
         when 'news'
-          throw 'news message body must be array' unless msg.body instanceof Array
+          unless msg.body instanceof Array
+            if msg.body.title? then msg.body = [ msg.body ] else throw 'news message body must be array'
           posts = []
           for a,i in msg.body when i < 10
             throw "every news must have a title" unless a.title
