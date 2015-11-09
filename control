@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-export DEBUG=http,wcn:*
-export NODE_ENV=production
+[ -z "$DEBUG" ] && export DEBUG=http,wcn:*
+[ -z "$NODE_ENV" ] && export NODE_ENV=production
 
 case X$1 in
     Xstart)

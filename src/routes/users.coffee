@@ -69,7 +69,6 @@ define ['async','express','module','debug','models/database','models/wechat','co
         chat = new WeChat(res.locals.agentId)
         return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('user',res.locals.role)
         chat.createUser user, (err1) ->
-          log "ressss",err1
           if err1
             log 'failed to create user',err1
             res.status(403).json message: err1
@@ -89,7 +88,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
       return res.status(403).json message: 'message body not found'
     if (not req.body.users) and (not req.body.tagIds) and (not req.body.departmentIds)
       log "tagId/users/departmentIds not found"
-      return res.status(403).json message: 'tagId/users/departmentIds not found'
+      return res.status(403).json message: 'tagIds/users/departmentIds not found'
     opts = merge req.body, {accessToken: res.locals.accessToken,appId: res.locals.agentId }
     chat.sendMessage opts, (err) ->
       if err
