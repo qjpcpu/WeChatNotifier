@@ -1,0 +1,27 @@
+#!/bin/bash
+set -e
+export DEBUG=http,wcn:*
+export NODE_ENV=production
+
+case X$1 in
+    Xstart)
+        if [ -z "`pm2 list|grep wechat-notifier`" ];then
+            pm2 start bin/www -n wechat-notifier --merge-logs -l logs/info.log --env DEBUG --env NODE_ENV
+        else
+            pm2 start wechat-notifier
+        fi
+        echo 'wechat-notifier started'
+        ;;
+    Xstop)
+        pm2 stop wechat-notifier
+        echo 'wechat-notifier stopped'
+        ;;
+    Xrestart)
+        pm2 restart wechat-notifier
+        echo 'wechat-notifier restarted'
+        ;;
+    X*)
+        echo "Usage: $0  start|stop|restart"
+        exit -1
+        ;;
+esac
