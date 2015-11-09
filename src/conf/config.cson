@@ -28,12 +28,8 @@ wechat:
     messages: [             # optional
       {
         match: '.*'
-        type: 'callback'    # or tuling or text
+        type: 'callback'    # or text
         url: 'https://127.0.0.1:8000/message-callback'
       }
     ]  
   ]   
-
-tuling:
-  key: ''
-  url: 'http://www.tuling123.com/openapi/api' 

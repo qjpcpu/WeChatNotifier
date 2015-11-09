@@ -7,6 +7,7 @@ del = require 'del'
 mocha = require 'gulp-mocha'
 chmod = require 'gulp-chmod'
 insert = require 'gulp-insert'
+fs = require 'fs'
 
 gulp.task 'default', (cb) ->
   console.log 'nothing in default'
@@ -17,7 +18,7 @@ gulp.task 'clean', ->
     'bin'
     'models'
     'routes'
-    'conf'
+    'conf/*.js'
     'test'
     'cli'
     '*.js'
@@ -31,8 +32,11 @@ gulp.task 'coffee', ->
     .pipe gulp.dest('.')
 
 # deploy config files 
-gulp.task 'config', ->
-  gulp.src('src/**/*.cson').pipe gulp.dest('.')
+gulp.task 'config', (cb) ->
+  if fs.existsSync('conf/config.cson')
+    gulp.src('conf/*.cson').pipe gulp.dest('./data/config-backup')
+  else
+    gulp.src('src/**/*.cson').pipe gulp.dest('.')
 
 gulp.task 'cli', ['coffee'], (cb) ->
   gulp.src('cli/wcn.js')

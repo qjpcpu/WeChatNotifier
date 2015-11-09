@@ -15,7 +15,10 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
             for cls in list
               cls.key = cls.key.replace(/^credentials:/,'')
               data.push cls
-            console.log prettyjson.render(data)
+            if data.length > 0
+              console.log prettyjson.render(data)
+            else
+              console.log 'No tokens found!'
             process.exit(0)
           ), { prefix: 'credentials:'}
         when 'create'
@@ -75,7 +78,7 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
               {
                 type: 'list'
                 name: 'key'
-                message: "请选择需要更新的token:\n"
+                message: "请选择需要更新的token配置:\n"
                 choices: (se) ->
                   data = []
                   for cls in list
@@ -84,31 +87,50 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
               }
               {
                 type: 'list'
+                name: 'update_token'
+                message: "是否刷新token:\n"
+                choices: [
+                  { name: '保持现在的token',value: false }
+                  { name: '生成新token',value: true }
+                ]                  
+              }              
+              {
+                type: 'list'
                 name: 'role'
                 message: "请选择权限类型:\n"
-                choices: [
-                  { name: '(标准)允许发送消息,查看用户信息[适用于大部分情况]',value: 'notifier' }
-                  { name: '(浏览)仅能查看信息',value: 'viewer' }
-                  { name: '(管理员)完全权限',value: 'manager' }
-                  { name: '(高级发送)查看全部信息，发送消息，修改标签',value: 'complexNotifier' }
-                ]
+                choices: (se) ->
+                  [
+                    { name: '(标准)允许发送消息,查看用户信息[适用于大部分情况]',value: 'notifier' }
+                    { name: '(浏览)仅能查看信息',value: 'viewer' }
+                    { name: '(管理员)完全权限',value: 'manager' }
+                    { name: '(高级发送)查看全部信息，发送消息，修改标签',value: 'complexNotifier' }
+                  ].sort (a,b) -> b.value == (c.value.role for c in list when c.key == se.key)[0]
               }  
               {
                 type: 'input'
                 name: 'name'
                 message: "请输入接入微信的客户端名称:\n"
+                default: (se) ->
+                  (c.value.name for c in list when c.key == se.key)[0]
                 validate: (term) -> if term?.length > 0 then true else "非法名称"
               }                          
             ]
             inquirer.prompt questions, (answer) ->
               database.getJson answer.key, (err,value) ->
-                key = (new Buffer(uuid.v1())).toString('base64')
+                
                 value.name = answer.name
                 value.role = answer.role
-                arr = [
-                  { type: 'del',key: answer.key }
-                  { type: 'put',key: "credentials:#{key}",value: value,valueEncoding: 'json' }
-                ]
+                if answer.update_token
+                  key = (new Buffer(uuid.v1())).toString('base64')
+                  arr = [
+                    { type: 'del',key: answer.key }
+                    { type: 'put',key: "credentials:#{key}",value: value,valueEncoding: 'json' }
+                  ]
+                else
+                  key = answer.key.replace(/^credentials:/,'')
+                  arr = [
+                    { type: 'put',key: answer.key,value: value,valueEncoding: 'json' }
+                  ]                
                 database.batch arr, (err) ->
                   unless err
                     console.log 'Update token OK'

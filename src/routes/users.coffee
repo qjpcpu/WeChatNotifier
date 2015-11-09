@@ -14,6 +14,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
         res.status(403).json message: 'no valid access token'
       else
         res.locals.agentId = val.agentId
+        res.locals.role = val.role
         next()
 
   router.use (req,res,next) ->
@@ -34,6 +35,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
   # status: all/watched/disabled/unwatched, default: watched
   router.get '/', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('user',res.locals.role)
     opts = 
       accessToken: res.locals.accessToken
       departmentId: req.query.departmentId
@@ -65,6 +67,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
         log "create user: #{user}"
         user.accessToken = res.locals.accessToken
         chat = new WeChat(res.locals.agentId)
+        return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('user',res.locals.role)
         chat.createUser user, (err1) ->
           log "ressss",err1
           if err1
@@ -76,6 +79,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.post '/send', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('message',res.locals.role)
     req.body.type ?= 'text'
     unless req.body.type in ['text','news']
       log "Not supported message type #{req.body.type}"
@@ -96,6 +100,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/:userId', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('user',res.locals.role)
     chat.user {accessToken: res.locals.accessToken,id: req.params.userId}, (err,user) ->
       if err
         log "no such user #{req.params.userId}",err
@@ -105,6 +110,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.put '/:userId', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('user',res.locals.role)
     user = merge req.body,{accessToken: res.locals.accessToken,id: req.params.userId}
     chat.updateUser user, (err) ->
       if err
@@ -115,6 +121,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/:userId/invite', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('user',res.locals.role)
     chat.inviteUser {accessToken: res.locals.accessToken,id: req.params.userId}, (err) ->
       if err
         log "cannt invite user #{req.params.userId}",err
@@ -124,6 +131,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.delete '/:userId', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('user',res.locals.role)
     chat.deleteUser {accessToken: res.locals.accessToken,id: req.params.userId}, (err) ->
       if err
         log "can not del user #{req.params.userId}",err
@@ -137,6 +145,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
   # body(object/Array/string)
   router.post '/:userId/send', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('message',res.locals.role)
     req.body.type ?= 'text'
     unless req.body.type in ['text','news']
       log "Not supported message type #{req.body.type}"

@@ -4,14 +4,12 @@ define [
   'models/wechat'
   'restler'
   'async'
-  'models/tuling'
   ], (
   debug
   Config
   WeChat
   rest
   async
-  Tuling
 ) ->
   log = debug 'wcn:wechat-router'
   class WeChatMsgRouter
@@ -40,8 +38,6 @@ define [
           switch cfg.type
             when 'text'
               cb null,cfg.words
-            when 'tuling'
-              Tuling.ask entity.fromUser,entity.content, (result) -> cb(null,result)
             else # 'callback'
               url = cfg.url
               if wechatConfig.callbackToken?.length > 0

@@ -14,6 +14,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
         res.status(403).json message: 'no valid access token'
       else
         res.locals.agentId = val.agentId
+        res.locals.role = val.role
         next()
 
   router.use (req,res,next) ->
@@ -30,6 +31,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('tag',res.locals.role)    
     chat.tags { accessToken: res.locals.accessToken },(err,list) ->
       if err
         log "failed to get roles",err
@@ -39,6 +41,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.post '/', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('tag',res.locals.role)
     unless req.body.name
       log "cannt found role name"
       return res.status(403).json message: "cannot find role name"
@@ -50,6 +53,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.delete '/:id', (req,res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('tag',res.locals.role)
     chat.deleteTag { accessToken: res.locals.accessToken,id: req.params.id },(err,role) ->
       if err
         res.status(403).json message: err
@@ -58,6 +62,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.get '/:id/users', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canRead('tag',res.locals.role)
     chat.usersByTag { accessToken: res.locals.accessToken,id: req.params.id }, (err,list) ->
       if err
         log 'failed to get users',err
@@ -67,6 +72,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.post '/:id/attach', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('tag',res.locals.role)
     unless req.body.users
       return res.status(403).json message: 'no user found'
     chat.attachTag { accessToken: res.locals.accessToken,tagId: req.params.id,users: req.body.users }, (err) ->
@@ -78,6 +84,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
 
   router.post '/:id/detach', (req, res) ->
     chat = new WeChat res.locals.agentId
+    return res.status(401).json(message: 'no enough previledge') unless chat.canWrite('tag',res.locals.role)
     unless req.body.users
       return res.status(403).json message: 'no user found'
     chat.detachTag { accessToken: res.locals.accessToken,tagId: req.params.id,users: req.body.users }, (err) ->
