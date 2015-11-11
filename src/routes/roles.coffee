@@ -37,6 +37,12 @@ define ['async','express','module','debug','models/database','models/wechat','co
         log "failed to get roles",err
         res.json  []
       else
+        regex = new RegExp "^#{res.locals.agentId}_"
+        list = (
+          for r in list when regex.test(r.name)
+            r.name = r.name.replace(regex,'')
+            r
+        )
         res.json list
 
   router.post '/', (req,res) ->
@@ -45,11 +51,14 @@ define ['async','express','module','debug','models/database','models/wechat','co
     unless req.body.name
       log "cannt found role name"
       return res.status(403).json message: "cannot find role name"
+    req.body.name = "^#{res.locals.agentId}_#{req.body.name}"
     chat.createTag { accessToken: res.locals.accessToken,name: req.body.name },(err,role) ->
       if err
         res.status(403).json message: err
       else
-        res.json message: role
+        regex = new RegExp "^#{res.locals.agentId}_"
+        role.name = role.name.replace regex,''
+        res.json role
 
   router.delete '/:id', (req,res) ->
     chat = new WeChat res.locals.agentId
