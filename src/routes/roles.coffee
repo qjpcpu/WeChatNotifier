@@ -51,7 +51,7 @@ define ['async','express','module','debug','models/database','models/wechat','co
     unless req.body.name
       log "cannt found role name"
       return res.status(403).json message: "cannot find role name"
-    req.body.name = "^#{res.locals.agentId}_#{req.body.name}"
+    req.body.name = "#{res.locals.agentId}_#{req.body.name}"
     chat.createTag { accessToken: res.locals.accessToken,name: req.body.name },(err,role) ->
       if err
         res.status(403).json message: err
