@@ -8,6 +8,8 @@ mocha = require 'gulp-mocha'
 chmod = require 'gulp-chmod'
 insert = require 'gulp-insert'
 fs = require 'fs'
+bowerSrc = require 'gulp-bower-src'
+mergeStream = require 'merge-stream'
 
 gulp.task 'default', (cb) ->
   console.log 'nothing in default'
@@ -22,11 +24,12 @@ gulp.task 'clean', ->
     'test'
     'cli'
     '*.js'
+    'public/assets'
   ]
 
 # build coffee script to javascript
 gulp.task 'coffee', ->
-  gulp.src(['src/**/*.coffee'])
+  gulp.src(['src/**/*.coffee','!src/assets/**/*.coffee'])
     .pipe coffee()
     .pipe rename((path) -> path.extname = '' if path.basename == 'www')
     .pipe gulp.dest('.')
@@ -49,7 +52,18 @@ gulp.task 'cli', ['coffee'], (cb) ->
   null
 
 gulp.task 'assets', ->
-  gulp.src('src/assets/**/*').pipe gulp.dest('public')
+  requirejsConfig = fs.readFileSync 'src/assets/requirejs-config.coffee'
+  vendor = bowerSrc().pipe(gulp.dest('public/assets/vendor'))
+  cssAssets = gulp.src(['src/assets/stylesheets/**/*']).pipe gulp.dest('public/assets/stylesheets')
+  favicon = gulp.src('src/assets/favicon.ico').pipe gulp.dest('public')
+  ctrls = gulp.src('src/assets/scripts/controllers/*.coffee')
+    .pipe insert.transform((contents, f) -> requirejsConfig + "\n" + contents)
+    .pipe coffee()
+    .pipe gulp.dest('public/assets/scripts/controllers')
+  scripts = gulp.src(['src/assets/scripts/**/*.coffee','!src/assets/scripts/controllers/*.coffee'])
+    .pipe coffee()
+    .pipe gulp.dest('public/assets/scripts')
+  mergeStream vendor,cssAssets,favicon,ctrls,scripts
 
 # build all coffee & config files
 gulp.task 'build', (cb) ->
