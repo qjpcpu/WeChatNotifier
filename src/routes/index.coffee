@@ -30,11 +30,7 @@ define [
       qrcode: (new Buffer(Math.random().toString() + uuid.v1().toString())).toString('base64')
     }
     log req.session
-    if req.session.user?.name
-      locals.user = req.session.user.name
-      locals.qrcode = req.session.user.name
-      res.render 'index', locals
-    else if req.query.id and req.query.redirect_uri
+    if req.query.id and req.query.redirect_uri
       database.getJson "identifiers:#{req.query.id}", (gerr,value) ->
         if gerr
           log "Can't find id:#{req.query.id}",gerr
@@ -46,10 +42,21 @@ define [
             url = urlParse(req.query.redirect_uri,true)
             url.query.state = req.query.state
             redirectUri = url.toString()
-          locals.qrcode = 'login:' + locals.qrcode
-          log locals
-          database.putJson "qrcode:#{locals.qrcode}",{ timestamp: moment().unix(),id: req.query.id, redirectUri: redirectUri }, (err) ->
-            res.render 'index', locals
+          if req.session.user?.name
+            ticket = (new Buffer(uuid.v1())).toString('base64')
+            redirectUri = urlParse redirectUri,true
+            redirectUri.ticket = ticket
+            database.putJson "ticket:#{ticket}", { timestamp: moment().unix(),fromUser: req.session.user.name }, (err) ->
+              res.redirect redirectUri.toString()
+          else
+            locals.qrcode = 'login:' + locals.qrcode
+            log locals
+            database.putJson "qrcode:#{locals.qrcode}",{ timestamp: moment().unix(),id: req.query.id, redirectUri: redirectUri }, (err) ->
+              res.render 'index', locals
+    else if req.session.user?.name
+      locals.user = req.session.user.name
+      locals.qrcode = req.session.user.name
+      res.render 'index', locals            
     else
       res.render 'index',locals
 

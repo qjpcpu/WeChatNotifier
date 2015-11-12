@@ -57,7 +57,7 @@ define [
   app.use cookieParser()
   app.use cookieSession {
     secret:'sOZ9bakJhS8CnNCotHlnI4Jpv5dqFmHlcjOBJ'
-    cookie: { secure: true,maxAge: 60 * 60 * 1000 }
+    cookie: { secure: true, maxAge: 60 * 60 * 48 }
   }
   app.use express.static(path.join(path.dirname(), 'public'))
   app.use '/', routes
