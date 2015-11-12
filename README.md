@@ -190,7 +190,7 @@ curl -H "Content-Type: application/json" -X POST -d '{"users":["jason","link"],"
 
 首先，需要在微信公众号某个app配置一个扫描二维码的菜单，建议新建独立app专门作为登录app。将该app的回调模式=>自定义菜单配置为:
 
-![menu config](http://menu-config.png)
+![menu config](https://raw.githubusercontent.com/qjpcpu/WeChatNotifier/master/images/menu-config.png)
 
 注意菜单类型必须为`扫描推事件(弹框)`,菜单的KEY值为`system_login`。（当然回调模式也需要正确配置，不再赘述）
 
@@ -214,7 +214,7 @@ curl -H "Content-Type: application/json" -X POST -d '{"users":["jason","link"],"
 
 用户到`http://wcn.com/?id=7fa8ab90-8462-11e5-92ac-717b74321647&redirect_uri=http://test.com/callback`看到如下的页面:
 
-![login page](http://login.png)
+![login page](https://raw.githubusercontent.com/qjpcpu/WeChatNotifier/master/images/login.png)
 
 用户使用企业号配置的对应app扫码即可登录，成功登录后会回调到:
 
