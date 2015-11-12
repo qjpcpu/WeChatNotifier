@@ -3,4 +3,7 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
-  script(data-main="/assets/scripts/controllers/login",src="/assets/vendor/requirejs/require.js")
+  div(id="login-qrcode")
+  span(id="info")
+  input(type="hidden",id="qrcode-value",value="#{qrcode}")
+  script(data-main="/assets/scripts/controllers/index",src="/assets/vendor/requirejs/require.js")

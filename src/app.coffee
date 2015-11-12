@@ -7,6 +7,7 @@ define [
     'fs'
     'file-stream-rotator'
     'cookie-parser'
+    'cookie-session'
     'body-parser'
     'routes/index'
     'routes/users'
@@ -22,6 +23,7 @@ define [
     fs
     FileStreamRotator
     cookieParser
+    cookieSession
     bodyParser
     routes
     users
@@ -53,6 +55,10 @@ define [
   app.use bodyParser.json()
   app.use bodyParser.urlencoded(extended: false)
   app.use cookieParser()
+  app.use cookieSession {
+    secret:'sOZ9bakJhS8CnNCotHlnI4Jpv5dqFmHlcjOBJ'
+    cookie: { secure: true,maxAge: 60 * 60 * 1000 }
+  }
   app.use express.static(path.join(path.dirname(), 'public'))
   app.use '/', routes
   app.use '/users', users

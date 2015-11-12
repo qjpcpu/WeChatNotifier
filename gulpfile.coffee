@@ -32,7 +32,7 @@ gulp.task 'coffee', ->
   gulp.src(['src/**/*.coffee','!src/assets/**/*.coffee'])
     .pipe coffee()
     .pipe rename((path) -> path.extname = '' if path.basename == 'www')
-    .pipe gulp.dest('.')
+    .pipe gulp.dest('.') 
 
 # deploy config files 
 gulp.task 'config', (cb) ->
@@ -72,7 +72,8 @@ gulp.task 'build', (cb) ->
 # start serve
 gulp.task 'serve', ->
   gulp.watch ['src/config/*.cson'], ['config']
-  gulp.watch ['src/**/*.coffee'], ['coffee']
+  gulp.watch ['src/**/*.coffee','!src/assets/**/*.coffee'], ['coffee']
+  gulp.watch ['src/assets/**/*.coffee'], ['assets']
   server = gls.new 'bin/www'
   server.start()
   gulp.watch ['./**/*.js'], (file) ->

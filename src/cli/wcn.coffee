@@ -50,8 +50,12 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
           inquirer.prompt questions, (value) ->
             key = (new Buffer(uuid.v1())).toString('base64')
             value.id = uuid.v1()
-            database.putJson "credentials:#{key}",value,(list) -> 
-              console.log "创建token成功,信息如下:"
+            arr = [
+              { type: 'put',key: "credentials:#{key}",value: value,valueEncoding: 'json'  }
+              { type: 'put',key: "identifiers:#{value.id}",value: { id: value.id },valueEncoding: 'json' }
+            ]              
+            database.batch arr, (err) -> 
+              console.log "创建token成功,信息如下:",err
               console.log prettyjson.render({key: key,value: value})
               process.exit(0)
         when 'del'
@@ -68,7 +72,12 @@ requirejs ['commander','async','conf/config','models/wechat','prettyjson','model
               }
             ]
             inquirer.prompt questions, (answer) ->
-              database.del answer.key,(err) ->
+              id = (p.value.id for p in list when p.key == answer.key)[0]
+              arr = [
+                { type: 'del',key: answer.key }
+                { type: 'del',key: "identifiers:#{id}" }
+              ]               
+              database.batch arr, (err) -> 
                 if err then console.error "删除失败" else console.log 'OK!'
                 process.exit 0
           ), { prefix: 'credentials:'}
