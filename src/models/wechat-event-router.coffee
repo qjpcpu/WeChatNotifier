@@ -18,7 +18,7 @@ define [
     handle: (entity,cb) ->
       evt = Cc.lowerCase entity.event
       # system login
-      if evt == 'scancode_waitmsg' and entity.eventKey == 'sytem_login' and entity.scanCodeInfo.ScanType == 'qrcode' and /^login:/.test(entity.scanCodeInfo.ScanResult)
+      if evt == 'scancode_waitmsg' and entity.eventKey == 'system_login' and entity.scanCodeInfo.ScanType == 'qrcode' and /^login:/.test(entity.scanCodeInfo.ScanResult)
         key = 'qrcode:' + entity.scanCodeInfo.ScanResult
         database.getJson key, (err,value) ->
           if err
