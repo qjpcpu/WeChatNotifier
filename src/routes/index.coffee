@@ -45,8 +45,9 @@ define [
           if req.session.user?.name
             ticket = (new Buffer(uuid.v1())).toString('base64')
             redirectUri = urlParse redirectUri,true
-            redirectUri.ticket = ticket
+            redirectUri.query.ticket = ticket
             database.putJson "ticket:#{ticket}", { timestamp: moment().unix(),fromUser: req.session.user.name }, (err) ->
+              log "redirect to #{redirectUri.toString()}"
               res.redirect redirectUri.toString()
           else
             locals.qrcode = 'login:' + locals.qrcode
@@ -76,7 +77,7 @@ define [
       else if value.fromUser?.length > 0 and value.redirectUri?.length > 0
         ticket = (new Buffer(uuid.v1())).toString('base64')
         redirectUri = urlParse value.redirectUri,true
-        redirectUri.ticket = ticket
+        redirectUri.query.ticket = ticket
         arr = [
           { type: 'del',key: "qrcode:#{qrcode}" }
           { type: 'put',key: "ticket:#{ticket}",value: { timestamp: moment().unix(),fromUser: value.fromUser },valueEncoding: 'json' }
