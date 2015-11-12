@@ -26,7 +26,7 @@ define [
 
   router.get '/', (req, res) ->
     locals = {
-      title: config.auth?.index?.title or 'Scan QRCode in WeChatNotifier to login'
+      title: config.auth?.strings?.title or 'Scan QRCode in WeChatNotifier to login'
       qrcode: (new Buffer(Math.random().toString() + uuid.v1().toString())).toString('base64')
     }
     log req.session
@@ -72,7 +72,7 @@ define [
     database.getJson "qrcode:#{qrcode}",(err,value) ->
       if err
         res.status(403).json message: 'no such login code',errcode: 2
-      else if moment().unix() - value.timestamp > 300
+      else if moment().unix() - value.timestamp > (config.auth?.qrcodeExpireSec or 300)
         res.status(403).json message: 'login code expired',errcode: 3
       else if value.fromUser?.length > 0 and value.redirectUri?.length > 0
         ticket = (new Buffer(uuid.v1())).toString('base64')
@@ -109,7 +109,7 @@ define [
         database.getJson "ticket:#{ticket}",(err,value) ->
           if err
             res.status(403).json message: 'ticket does not exists'
-          else if moment().unix() - value.timestamp > 60
+          else if moment().unix() - value.timestamp > (config.auth?.ticketExpireSec or 60)
             database.del "ticket:#{ticket}",(delerr) ->
               res.status(403).json message: 'ticket expired'
           else if value.fromUser?.length > 0

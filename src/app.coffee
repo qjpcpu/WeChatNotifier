@@ -14,6 +14,7 @@ define [
     'routes/roles'
     'routes/departments'
     'routes/wechat'
+    'conf/config'
   ], (
     module
     express
@@ -30,6 +31,7 @@ define [
     roles
     departments
     wechat
+    appConfig
 ) ->
   app = express()
   
@@ -56,8 +58,8 @@ define [
   app.use bodyParser.urlencoded(extended: false)
   app.use cookieParser()
   app.use cookieSession {
-    secret:'sOZ9bakJhS8CnNCotHlnI4Jpv5dqFmHlcjOBJ'
-    cookie: { secure: true, maxAge: 60 * 60 * 48 }
+    secret: 'sOZ9bakJhS8CnNCotHlnI4Jpv5dqFmHlcjOBJ'
+    cookie: { secure: true, maxAge: 60 * 60 * (appConfig.auth?.cookieExpireHour or 48) }
   }
   app.use express.static(path.join(path.dirname(), 'public'))
   app.use '/', routes
