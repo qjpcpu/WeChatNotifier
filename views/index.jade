@@ -1,9 +1,11 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
-  div(id="login-qrcode")
-  span(id="info")
-  input(type="hidden",id="qrcode-value",value="#{qrcode}")
+  .container
+    .qrcode-form
+      h3.txt= title
+      div(id="login-qrcode")
+      .info
+       h5(id="info",class="txt")
+      input(type="hidden",id="qrcode-value",value="#{qrcode}")
   script(data-main="/assets/scripts/controllers/index",src="/assets/vendor/requirejs/require.js")

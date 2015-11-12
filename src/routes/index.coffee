@@ -26,11 +26,11 @@ define [
 
   router.get '/', (req, res) ->
     locals = {
-      title: config.auth?.index?.title or 'Scan QR Code in WeChatNotifier to log in'
+      title: config.auth?.index?.title or 'Scan QRCode in WeChatNotifier to login'
       qrcode: (new Buffer(Math.random().toString() + uuid.v1().toString())).toString('base64')
     }
     log req.session
-    if req.session.user
+    if req.session.user?.name
       locals.user = req.session.user.name
       locals.qrcode = req.session.user.name
       res.render 'index', locals

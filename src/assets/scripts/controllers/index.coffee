@@ -13,6 +13,7 @@ requirejs [
     height: 256
     correctLevel : QRCode.CorrectLevel.H
   $('#qrcode-value').remove()
+
   console.log qrcodeText
   refresher = 
     qrcode: qrcodeText
