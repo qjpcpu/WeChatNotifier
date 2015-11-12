@@ -42,11 +42,11 @@ define [
             url = urlParse(req.query.redirect_uri,true)
             url.query.state = req.query.state
             redirectUri = url.toString()
-          if req.session.user?.name
+          if req.session.user
             ticket = (new Buffer(uuid.v1())).toString('base64')
             redirectUri = urlParse redirectUri,true
             redirectUri.query.ticket = ticket
-            database.putJson "ticket:#{ticket}", { timestamp: moment().unix(),fromUser: req.session.user.name }, (err) ->
+            database.putJson "ticket:#{ticket}", { timestamp: moment().unix(),fromUser: req.session.user }, (err) ->
               log "redirect to #{redirectUri.toString()}"
               res.redirect redirectUri.toString()
           else
@@ -54,7 +54,7 @@ define [
             log locals
             database.putJson "qrcode:#{locals.qrcode}",{ timestamp: moment().unix(),id: req.query.id, redirectUri: redirectUri }, (err) ->
               res.render 'index', locals
-    else if req.session.user?.name
+    else if req.session.user
       locals.user = req.session.user.name
       locals.qrcode = req.session.user.name
       res.render 'index', locals            
@@ -74,7 +74,7 @@ define [
         res.status(403).json message: 'no such login code',errcode: 2
       else if moment().unix() - value.timestamp > (config.auth?.qrcodeExpireSec or 300)
         res.status(403).json message: 'login code expired',errcode: 3
-      else if value.fromUser?.length > 0 and value.redirectUri?.length > 0
+      else if value.fromUser? and value.redirectUri?.length > 0
         ticket = (new Buffer(uuid.v1())).toString('base64')
         redirectUri = urlParse value.redirectUri,true
         redirectUri.query.ticket = ticket
@@ -83,7 +83,7 @@ define [
           { type: 'put',key: "ticket:#{ticket}",value: { timestamp: moment().unix(),fromUser: value.fromUser },valueEncoding: 'json' }
         ]        
         database.batch arr, (err) ->
-          req.session.user = { name: value.fromUser }
+          req.session.user = value.fromUser
           res.json ticket: ticket,redirect_uri: redirectUri.toString(),message: 'login ok',errcode: 0
       else if not value.fromUser?
         res.json message: 'need scan qrcode',errcode: 4
@@ -112,9 +112,9 @@ define [
           else if moment().unix() - value.timestamp > (config.auth?.ticketExpireSec or 60)
             database.del "ticket:#{ticket}",(delerr) ->
               res.status(403).json message: 'ticket expired'
-          else if value.fromUser?.length > 0
+          else if value.fromUser?
             database.del "ticket:#{ticket}",(delerr) ->
-              res.json user: value.fromUser
+              res.json value.fromUser
           else
             database.del "ticket:#{ticket}",(delerr) ->
               res.status(403).json message: 'bad ticket'

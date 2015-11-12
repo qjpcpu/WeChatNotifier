@@ -41,6 +41,9 @@ WeChatNotifier使用cson作为配置文件，可读性可写性高(有人说yaml
 1. 对于收到的事件，可以根据事件类型回调到不同的url中去，而这也是原始微信平台所不具备的功能
 2. 对于收到的文本消息，可以配置正则表达式规则，生成文本路由，也回调到不同的url或者反馈不同的消息，这也是原始微信平台所不具备的功能
 
+单点登录:
+
+WeChatNotifier支持企业内部利用微信进行单点登录。
 
 ## 安装
 
@@ -180,6 +183,57 @@ curl http://127.0.0.1:8002/users/send?accessToken=NDdkMWU3MTAtODQ2NS0 -d body=he
 ```
 curl -H "Content-Type: application/json" -X POST -d '{"users":["jason","link"],"body":{"title":"subject1","description":"this is a very long message"},"type":"news"}'  http://127.0.0.1:8002/users/send?accessToken=NDdkMWU3MTAtODQ2NS0
 ```
+
+## 单点登录
+
+### 单点登录配置
+
+首先，需要在微信公众号某个app配置一个扫描二维码的菜单，建议新建独立app专门作为登录app。将该app的回调模式=>自定义菜单配置为:
+
+![menu config](http://menu-config.png)
+
+注意菜单类型必须为`扫描推事件(弹框)`,菜单的KEY值为`system_login`。（当然回调模式也需要正确配置，不再赘述）
+
+### 登录示例
+
+比如内部系统`Test`需要使用单点登录，使用`cli/wcn token create`为改系统生成配置:
+
+```
+-
+  key:   NDdkMWU3MTAtODQ2NS0xMWU1LWFhYTItZDNmMDAwOTQ4Y2Yw
+  value:
+    agentId: 2
+    name:    Test
+    role:    notifier
+    id:      7fa8ab90-8462-11e5-92ac-717b74321647
+```
+
+如果wechatnotifier的域名为`http://wcn.com`,`Test`系统需要引导用户到`http://wcn.com/?id=7fa8ab90-8462-11e5-92ac-717b74321647&redirect_uri=http://test.com`登录。
+
+其中，`id`为上一步生成的id,`redirect_uri`是回调地址。
+
+用户到`http://wcn.com/?id=7fa8ab90-8462-11e5-92ac-717b74321647&redirect_uri=http://test.com/callback`看到如下的页面:
+
+![login page](http://login.png)
+
+用户使用企业号配置的对应app扫码即可登录，成功登录后会回调到:
+
+```
+http://test.com/callback/?ticket=DkwMS0xMWU1LWJiMjMtYWRjZ
+```
+
+`Test`系统获取到这个ticket后就到WechatNotifier进行验证，获取用户信息。
+
+```
+POST http://wcn.com/validate?accessToken=NDdkMWU3MTAtODQ2NS0xMWU1LWFhYTItZDNmMDAwOTQ4Y2Yw
+post请求数据为:
+{
+  "ticket": "DkwMS0xMWU1LWJiMjMtYWRjZ"
+}
+```
+
+> 注意:
+> wechatnotifier设想的场景为内部系统单点登录，并没有对回调地址做限制。
 
 ## API列表
 
