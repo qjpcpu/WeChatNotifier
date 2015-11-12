@@ -101,18 +101,23 @@ define [
       log "No ticket found in request"
       res.status(403).json message: 'no ticket found'
       return    
-    database.getJson "ticket:#{ticket}",(err,value) ->
-      if err
-        res.status(403).json message: 'ticket does not exists'
-      else if moment().unix() - value.timestamp > 60
-        database.del "ticket:#{ticket}",(delerr) ->
-          res.status(403).json message: 'ticket expired'
-      else if value.fromUser?.length > 0
-        database.del "ticket:#{ticket}",(delerr) ->
-          res.json user: value.fromUser
-      else
-        database.del "ticket:#{ticket}",(delerr) ->
-          res.status(403).json message: 'bad ticket'
+    database.getJson "credentials:#{token}", (terr,value) ->
+      if terr
+        log "fetch access token config failed",terr
+        res.status(403).json message: 'no valid access token'
+      else      
+        database.getJson "ticket:#{ticket}",(err,value) ->
+          if err
+            res.status(403).json message: 'ticket does not exists'
+          else if moment().unix() - value.timestamp > 60
+            database.del "ticket:#{ticket}",(delerr) ->
+              res.status(403).json message: 'ticket expired'
+          else if value.fromUser?.length > 0
+            database.del "ticket:#{ticket}",(delerr) ->
+              res.json user: value.fromUser
+          else
+            database.del "ticket:#{ticket}",(delerr) ->
+              res.status(403).json message: 'bad ticket'
 
 
   router.post '/exchange_token', (req,res) ->
