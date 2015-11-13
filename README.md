@@ -40,7 +40,7 @@ WeChatNotifier使用cson作为配置文件，可读性可写性高(有人说yaml
 { "msgType": "text","content": "响应文本内容" }
 或者回复长文本内容
 { 
-  msgType: "news",
+  "msgType": "news",
   "articles": [ 
     { 
       "title": "标题1",
