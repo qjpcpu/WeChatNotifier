@@ -14,6 +14,7 @@ requirejs [
       height: 256
       correctLevel : QRCode.CorrectLevel.H
     $('#qrcode-value').remove()
+    $('#login-qrcode').attr('title','')
   
     refresher = 
       qrcode: qrcodeText
