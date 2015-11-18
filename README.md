@@ -33,7 +33,19 @@ WeChatNotifier使用cson作为配置文件，可读性可写性高(有人说yaml
 
 对于每个agent app，有两类处理模式可配置：
 
-##### 1. callback类型，当收到事件或消息后，会直接POST转发到配置的url中去。该回调地址的接到消息后响应的数据应该为json格式: 
+##### 1. callback类型，当收到事件或消息后，会直接POST转发到配置的url中去。该回调地址接到json消息格式类似于:
+
+```
+{ 
+  msgType: 'text',
+  content: 'content here',
+  msgId: '4350889896202731522',
+  agentId: '5',
+  fromUser: 'jason-qu' 
+}
+```
+
+响应的数据应该为json格式: 
 
 ```
 简单回复文本内容
