@@ -91,11 +91,15 @@ define [
           res.render "wechat/wrap", chat.encrypt(xmlStr)        
       else
         response = {}
-        if typeof data == 'object'
+        if typeof data == 'object' and data.msgType in ['text','news','image','music','video','voice']
           response[Cc.camelCase(k)] = v for k,v of data             
         else if typeof data == 'string'
           response.msgType = 'text'
           response.content = data
+        else
+          response = 
+            msgType: 'text'
+            content: "oops! error happens"          
 
         response.toUser = xmlData.FromUserName
         response.fromUser = xmlData.ToUserName
