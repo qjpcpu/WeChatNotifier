@@ -97,9 +97,10 @@ define [
           response.msgType = 'text'
           response.content = data
         else
+          log "bad response from server",data
           response = 
             msgType: 'text'
-            content: "oops! error happens"          
+            content: "oops! bad response from server"          
 
         response.toUser = xmlData.FromUserName
         response.fromUser = xmlData.ToUserName
