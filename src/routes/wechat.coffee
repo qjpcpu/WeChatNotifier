@@ -91,7 +91,7 @@ define [
           res.render "wechat/wrap", chat.encrypt(xmlStr)        
       else
         response = {}
-        if typeof data == 'object' and data.msgType in ['text','news','image','music','video','voice']
+        if typeof data == 'object' and data?.msgType in ['text','news','image','music','video','voice']
           response[Cc.camelCase(k)] = v for k,v of data             
         else if typeof data == 'string'
           response.msgType = 'text'
