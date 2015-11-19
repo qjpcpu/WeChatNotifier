@@ -70,6 +70,7 @@ define [
   
     encrypt: (message) ->
       wc = this.config
+      message = message.toString()
       cryptor = new WXBizMsgCrypt(wc.token, wc.encodingAesKey, wc.corpId)
       message = cryptor.encrypt(message)
       timestamp = "#{moment().unix()}"
