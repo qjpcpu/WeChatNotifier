@@ -241,6 +241,10 @@ define [
         msgtype: msg.type or 'text'
         agentid: msg.appId
         safe: if msg.encrypt then 1 else 0
+      for k,v of opts when k in ['touser','toparty','totag']
+        delete opts[k] unless v?
+      if  (not opts.touser?) and (not opts.toparty?) and (not opts.totag?)
+        throw 'No reciever found'
       switch opts.msgtype
         when 'text'
           throw 'text message body must be string' unless typeof msg.body == 'string'
