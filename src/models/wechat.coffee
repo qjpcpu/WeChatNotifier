@@ -245,9 +245,11 @@ define [
         delete opts[k] unless v?
       if  (not opts.touser?) and (not opts.toparty?) and (not opts.totag?)
         throw 'No reciever found'
+      ctrlUnicode = /[\u0000-\u0009\u000B-\u001F\u007F-\u009F]/g
       switch opts.msgtype
         when 'text'
           throw 'text message body must be string' unless typeof msg.body == 'string'
+          msg.body = msg.body.replace ctrlUnicode,''
           opts[opts.msgtype] = { content: msg.body }
         when 'image','voice','file'
           throw 'message body must be hash object' unless typeof msg.body == 'object'
@@ -260,7 +262,7 @@ define [
           opts[opts.msgtype] = 
             media_id: msg.body.mediaId
             title: msg.body.title
-            description: msg.body.description
+            description: msg.body.description.replace(ctrlUnicode,'')
         when 'news'
           unless msg.body instanceof Array
             if msg.body.title? then msg.body = [ msg.body ] else throw 'news message body must be array'
@@ -268,8 +270,8 @@ define [
           for a,i in msg.body when i < 10
             throw "every news must have a title" unless a.title
             posts.push
-              title: a.title
-              description: a.description
+              title: a.title.replace(ctrlUnicode,'')
+              description: a.description.replace(ctrlUnicode,'')
               url: a.url
               picurl: a.picUrl
           opts[opts.msgtype] = articles: posts
